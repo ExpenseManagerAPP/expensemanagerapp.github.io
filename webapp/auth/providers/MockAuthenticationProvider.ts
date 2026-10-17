@@ -1,32 +1,29 @@
 import { IAuthenticationProvider } from "../IAuthenticationProvider";
 import { UserSession } from "../models/UserSession";
-import { AuthenticationService } from "../AuthenticationService";
+import { SessionStorage } from "../storage/SessionStorage";
 
 export class MockAuthenticationProvider implements IAuthenticationProvider {
-
-    public login(): Promise<UserSession> {
-        return Promise.resolve({
-            accessToken: "mock-token",
-            expiresAt: Date.now() + 3600000,
-            userName: "Davi"
-        });
-    }
 
     public loginWithPassword(username: string): Promise<UserSession> {
         return Promise.resolve({
             accessToken: "mock-token",
             expiresAt: Date.now() + 3600000,
-            userName: username
+            userName: username,
+            role: "Admin"
         });
     }
 
-    public async logout(): Promise<void> {
-        await AuthenticationService.logout();
+    public refresh(): Promise<UserSession | null> {
+        return Promise.resolve(null);
     }
 
-    public isAuthenticated(): Promise<boolean> {
-        const session = AuthenticationService.getSession();
-        return Promise.resolve(!!session && session.expiresAt > Date.now());
+    public changePassword(session: UserSession): Promise<UserSession> {
+        return Promise.resolve({ ...session, mustChangePassword: false });
+    }
+
+    public logout(): Promise<void> {
+        SessionStorage.clear();
+        return Promise.resolve();
     }
 
 }

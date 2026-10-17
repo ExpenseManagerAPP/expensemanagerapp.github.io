@@ -1,4 +1,4 @@
-import { XsuaaAuthHelper } from "../auth/providers/XsuaaAuthHelper";
+import { AuthApi } from "../auth/AuthApi";
 
 export function currencyCode(currency: unknown, fallback = "BRL"): string {
     if (typeof currency === "string" && currency) {
@@ -114,7 +114,7 @@ export function imageUrl(path?: string): string {
         return "";
     }
 
-    const base = XsuaaAuthHelper.getConfig().odataService;
+    const base = AuthApi.getConfig().odataService;
     return `${base}${path}`;
 }
 
@@ -138,7 +138,7 @@ export function personImage(id?: string, imageType?: string): string {
     if (!id || !imageType) {
         return "";
     }
-    return `${XsuaaAuthHelper.getConfig().odataService}Persons(ID='${encodeURIComponent(id)}',IsActiveEntity=true)/Image`;
+    return `${AuthApi.getConfig().odataService}Persons(ID='${encodeURIComponent(id)}',IsActiveEntity=true)/Image`;
 }
 
 export function transactionSubtle(category?: string, date?: string): string {
