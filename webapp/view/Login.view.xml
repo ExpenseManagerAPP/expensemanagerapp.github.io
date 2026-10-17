@@ -164,10 +164,6 @@
                             />
                         </VBox>
 
-                        <Text text="{i18n>loginOr}" textAlign="Center" class="loginDivider" />
-
-                        <Link text="{i18n>loginWithSap}" press=".onLogin" class="loginSap" />
-
                         <Text
                             text="{i18n>loginNote}"
                             textAlign="Center"

@@ -8,4 +8,10 @@ export interface UserSession {
 
     userName: string;
 
+    name?: string;
+
+    role?: string;
+
+    mustChangePassword?: boolean;
+
 }

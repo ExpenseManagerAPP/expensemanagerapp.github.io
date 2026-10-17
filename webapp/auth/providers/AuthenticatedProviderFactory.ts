@@ -1,9 +1,9 @@
 import Environment, { EnvironmentType } from "../../util/Environment";
 import { BtpAuthenticationProvider } from "./BtpAuthenticationProvider";
-import { GithubPagesAuthenticationProvider } from "./GithubPagesAuthenticationProvider";
+import { AppAuthenticationProvider } from "./AppAuthenticationProvider";
 import { MockAuthenticationProvider } from "./MockAuthenticationProvider";
 import { IAuthenticationProvider } from "../IAuthenticationProvider";
-import { XsuaaAuthHelper } from "./XsuaaAuthHelper";
+import { AuthApi } from "../AuthApi";
 
 export class AuthenticatedProviderFactory {
 
@@ -12,10 +12,10 @@ export class AuthenticatedProviderFactory {
             case EnvironmentType.BTP:
                 return new BtpAuthenticationProvider();
             case EnvironmentType.GITHUB:
-                return new GithubPagesAuthenticationProvider();
+                return new AppAuthenticationProvider();
             case EnvironmentType.LOCAL:
-                return XsuaaAuthHelper.getConfig().auth
-                    ? new GithubPagesAuthenticationProvider()
+                return AuthApi.getConfig().auth
+                    ? new AppAuthenticationProvider()
                     : new MockAuthenticationProvider();
             default:
                 return new MockAuthenticationProvider();

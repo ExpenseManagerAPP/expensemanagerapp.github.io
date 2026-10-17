@@ -1,5 +1,5 @@
 import { AuthenticationService } from "../auth/AuthenticationService";
-import { XsuaaAuthHelper } from "../auth/providers/XsuaaAuthHelper";
+import { AuthApi } from "../auth/AuthApi";
 
 function getToken(): string {
     const session = AuthenticationService.getSession();
@@ -7,7 +7,7 @@ function getToken(): string {
 }
 
 export function getOdataServiceUrl(): string {
-    return XsuaaAuthHelper.getConfig().odataService;
+    return AuthApi.getConfig().odataService;
 }
 
 export function buildHeaders(init: RequestInit): Headers {
