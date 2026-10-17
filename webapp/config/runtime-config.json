@@ -1,7 +1,7 @@
 {
-  "btpHost": "https://d4e1c97ctrial-dev-expensemanager-srv.cfapps.us10-001.hana.ondemand.com",
-  "odataService": "https://d4e1c97ctrial-dev-expensemanager-srv.cfapps.us10-001.hana.ondemand.com/service/ExpenseManager/",
+  "btpHost": "https://d4e1c97ctrial-dev-expensemanagerapp-srv.cfapps.us10-001.hana.ondemand.com",
+  "odataService": "https://d4e1c97ctrial-dev-expensemanagerapp-srv.cfapps.us10-001.hana.ondemand.com/service/ExpenseManager/",
   "auth": {
-    "baseUrl": "https://d4e1c97ctrial-dev-expensemanager-srv.cfapps.us10-001.hana.ondemand.com/auth"
+    "baseUrl": "https://d4e1c97ctrial-dev-expensemanagerapp-srv.cfapps.us10-001.hana.ondemand.com/auth"
   }
 }
