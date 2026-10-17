@@ -7,8 +7,6 @@ export class SessionStorage {
 
     private static readonly sessions = new Storage(Storage.Type.local, "expenseManager");
 
-    private static readonly OAUTH_STATE_KEY = "expensemanager.state";
-
     public static save(session: UserSession): void {
         this.sessions.put(this.STORAGE_KEY, session);
     }
@@ -20,15 +18,6 @@ export class SessionStorage {
 
     public static clear(): void {
         this.sessions.remove(this.STORAGE_KEY);
-    }
-
-    public static saveOauthState(state: string): void {
-        Storage.put(this.OAUTH_STATE_KEY, state);
-    }
-
-    public static loadOauthState(): string | null {
-        const value = Storage.get(this.OAUTH_STATE_KEY) as string | null;
-        return value ?? null;
     }
 
 }

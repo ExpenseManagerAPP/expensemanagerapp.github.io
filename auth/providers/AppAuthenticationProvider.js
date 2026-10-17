@@ -1,0 +1,2 @@
+sap.ui.define(["../storage/SessionStorage","../AuthApi"],function(e,r){"use strict";const s=e["SessionStorage"];const o=r["AuthApi"];class n{loginWithPassword(e,r){return o.loginWithPassword(e,r)}async refresh(e){return e.refreshToken?o.refresh(e.refreshToken):null}changePassword(e,r,s){return o.changePassword(e.accessToken,r,s)}logout(){s.clear();return Promise.resolve()}}var t={__esModule:true};t.AppAuthenticationProvider=n;return t});
+//# sourceMappingURL=AppAuthenticationProvider.js.map

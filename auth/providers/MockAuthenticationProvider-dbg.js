@@ -1,28 +1,28 @@
-sap.ui.define(["../AuthenticationService"], function (___AuthenticationService) {
+sap.ui.define(["../storage/SessionStorage"], function (___storage_SessionStorage) {
   "use strict";
 
-  const AuthenticationService = ___AuthenticationService["AuthenticationService"];
+  const SessionStorage = ___storage_SessionStorage["SessionStorage"];
   class MockAuthenticationProvider {
-    login() {
-      return Promise.resolve({
-        accessToken: "mock-token",
-        expiresAt: Date.now() + 3600000,
-        userName: "Davi"
-      });
-    }
     loginWithPassword(username) {
       return Promise.resolve({
         accessToken: "mock-token",
         expiresAt: Date.now() + 3600000,
-        userName: username
+        userName: username,
+        role: "Admin"
       });
     }
-    async logout() {
-      await AuthenticationService.logout();
+    refresh() {
+      return Promise.resolve(null);
     }
-    isAuthenticated() {
-      const session = AuthenticationService.getSession();
-      return Promise.resolve(!!session && session.expiresAt > Date.now());
+    changePassword(session) {
+      return Promise.resolve({
+        ...session,
+        mustChangePassword: false
+      });
+    }
+    logout() {
+      SessionStorage.clear();
+      return Promise.resolve();
     }
   }
   var __exports = {

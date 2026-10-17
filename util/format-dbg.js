@@ -1,7 +1,7 @@
-sap.ui.define(["../auth/providers/XsuaaAuthHelper"], function (___auth_providers_XsuaaAuthHelper) {
+sap.ui.define(["../auth/AuthApi"], function (___auth_AuthApi) {
   "use strict";
 
-  const XsuaaAuthHelper = ___auth_providers_XsuaaAuthHelper["XsuaaAuthHelper"];
+  const AuthApi = ___auth_AuthApi["AuthApi"];
   function currencyCode(currency, fallback = "BRL") {
     if (typeof currency === "string" && currency) {
       return currency;
@@ -111,7 +111,7 @@ sap.ui.define(["../auth/providers/XsuaaAuthHelper"], function (___auth_providers
     if (!path) {
       return "";
     }
-    const base = XsuaaAuthHelper.getConfig().odataService;
+    const base = AuthApi.getConfig().odataService;
     return `${base}${path}`;
   }
   function formatMonth(year, month) {
@@ -134,7 +134,7 @@ sap.ui.define(["../auth/providers/XsuaaAuthHelper"], function (___auth_providers
     if (!id || !imageType) {
       return "";
     }
-    return `${XsuaaAuthHelper.getConfig().odataService}Persons(ID='${encodeURIComponent(id)}',IsActiveEntity=true)/Image`;
+    return `${AuthApi.getConfig().odataService}Persons(ID='${encodeURIComponent(id)}',IsActiveEntity=true)/Image`;
   }
   function transactionSubtle(category, date) {
     const formatted = date ? formatDate(date) : "";

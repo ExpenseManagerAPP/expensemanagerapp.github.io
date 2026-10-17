@@ -7,6 +7,8 @@ sap.ui.define([], function () {
    */
   const PERSON_CHANNEL = "expenseManager.person";
   const PERSON_SELECTED = "selected";
+
+  /** The person bindings must be released: the draft is closing or the user signed out. */
   const PERSON_DRAFT_CLOSING = "draftClosing";
   var __exports = {
     __esModule: true

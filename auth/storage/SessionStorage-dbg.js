@@ -4,7 +4,6 @@ sap.ui.define(["sap/ui/util/Storage"], function (Storage) {
   class SessionStorage {
     static STORAGE_KEY = "session";
     static sessions = new Storage(Storage.Type.local, "expenseManager");
-    static OAUTH_STATE_KEY = "expensemanager.state";
     static save(session) {
       this.sessions.put(this.STORAGE_KEY, session);
     }
@@ -14,13 +13,6 @@ sap.ui.define(["sap/ui/util/Storage"], function (Storage) {
     }
     static clear() {
       this.sessions.remove(this.STORAGE_KEY);
-    }
-    static saveOauthState(state) {
-      Storage.put(this.OAUTH_STATE_KEY, state);
-    }
-    static loadOauthState() {
-      const value = Storage.get(this.OAUTH_STATE_KEY);
-      return value ?? null;
     }
   }
   var __exports = {

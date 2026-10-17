@@ -1,20 +1,27 @@
 import { IAuthenticationProvider } from "../IAuthenticationProvider";
 import { UserSession } from "../models/UserSession";
 import { SessionStorage } from "../storage/SessionStorage";
-import { AuthenticationService } from "../AuthenticationService";
 
 export class BtpAuthenticationProvider implements IAuthenticationProvider {
-
-    public login(): Promise<UserSession> {
-        return Promise.resolve(this.createSession());
-    }
 
     /**
      * On the BTP launchpad the managed app router authenticates the user,
      * so the password form simply opens the platform session.
      */
     public loginWithPassword(): Promise<UserSession> {
-        return this.login();
+        return Promise.resolve({
+            accessToken: "btp-session-token",
+            expiresAt: Date.now() + 3600000,
+            userName: "Usuário BTP"
+        });
+    }
+
+    public refresh(): Promise<UserSession | null> {
+        return Promise.resolve(null);
+    }
+
+    public changePassword(): Promise<UserSession> {
+        return Promise.reject(new Error("Password changes are managed by the platform"));
     }
 
     public logout(): Promise<void> {
@@ -26,19 +33,6 @@ export class BtpAuthenticationProvider implements IAuthenticationProvider {
         }
 
         return Promise.resolve();
-    }
-
-    public isAuthenticated(): Promise<boolean> {
-        const session = AuthenticationService.getSession();
-        return Promise.resolve(!!session && session.expiresAt > Date.now());
-    }
-
-    private createSession(): UserSession {
-        return {
-            accessToken: "btp-session-token",
-            expiresAt: Date.now() + 3600000,
-            userName: "Usuário BTP"
-        };
     }
 
 }

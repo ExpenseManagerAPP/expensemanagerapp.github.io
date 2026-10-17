@@ -1,4 +1,4 @@
-sap.ui.define(["../../util/Environment", "./BtpAuthenticationProvider", "./GithubPagesAuthenticationProvider", "./MockAuthenticationProvider", "./XsuaaAuthHelper"], function (__Environment, ___BtpAuthenticationProvider, ___GithubPagesAuthenticationProvider, ___MockAuthenticationProvider, ___XsuaaAuthHelper) {
+sap.ui.define(["../../util/Environment", "./BtpAuthenticationProvider", "./AppAuthenticationProvider", "./MockAuthenticationProvider", "../AuthApi"], function (__Environment, ___BtpAuthenticationProvider, ___AppAuthenticationProvider, ___MockAuthenticationProvider, ___AuthApi) {
   "use strict";
 
   function _interopRequireDefault(obj) {
@@ -7,18 +7,18 @@ sap.ui.define(["../../util/Environment", "./BtpAuthenticationProvider", "./Githu
   const Environment = _interopRequireDefault(__Environment);
   const EnvironmentType = __Environment["EnvironmentType"];
   const BtpAuthenticationProvider = ___BtpAuthenticationProvider["BtpAuthenticationProvider"];
-  const GithubPagesAuthenticationProvider = ___GithubPagesAuthenticationProvider["GithubPagesAuthenticationProvider"];
+  const AppAuthenticationProvider = ___AppAuthenticationProvider["AppAuthenticationProvider"];
   const MockAuthenticationProvider = ___MockAuthenticationProvider["MockAuthenticationProvider"];
-  const XsuaaAuthHelper = ___XsuaaAuthHelper["XsuaaAuthHelper"];
+  const AuthApi = ___AuthApi["AuthApi"];
   class AuthenticatedProviderFactory {
     static create() {
       switch (Environment.current()) {
         case EnvironmentType.BTP:
           return new BtpAuthenticationProvider();
         case EnvironmentType.GITHUB:
-          return new GithubPagesAuthenticationProvider();
+          return new AppAuthenticationProvider();
         case EnvironmentType.LOCAL:
-          return XsuaaAuthHelper.getConfig().auth ? new GithubPagesAuthenticationProvider() : new MockAuthenticationProvider();
+          return AuthApi.getConfig().auth ? new AppAuthenticationProvider() : new MockAuthenticationProvider();
         default:
           return new MockAuthenticationProvider();
       }

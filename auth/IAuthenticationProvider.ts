@@ -2,12 +2,13 @@ import { UserSession } from "./models/UserSession";
 
 export interface IAuthenticationProvider {
 
-    login(): Promise<UserSession>;
-
     loginWithPassword(username: string, password: string): Promise<UserSession>;
 
-    logout(): Promise<void>;
+    /** A fresh session for the refresh token, or null when it cannot be renewed. */
+    refresh(session: UserSession): Promise<UserSession | null>;
 
-    isAuthenticated(): Promise<boolean>;
+    changePassword(session: UserSession, currentPassword: string, newPassword: string): Promise<UserSession>;
+
+    logout(): Promise<void>;
 
 }

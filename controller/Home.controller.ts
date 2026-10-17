@@ -44,6 +44,9 @@ interface CardRow {
     Name: string;
 }
 
+/** Routes shown outside the workspace shell (no person, no tabs). */
+const OUTSIDE_WORKSPACE_ROUTES = ["Login", "ChangePassword"];
+
 /**
  * Orchestrates the Home dashboard. Loading, selection and image/media state
  * is delegated to focused services (PeriodService, MediaService,
@@ -66,7 +69,7 @@ export default class Home extends BaseController {
         (this.getOwnerComponent() as unknown as Component).setWorkspace(this);
         this.getRouter().attachRouteMatched((event) => {
             const route = event.getParameter("name");
-            if (route && route !== "Login") {
+            if (route && !OUTSIDE_WORKSPACE_ROUTES.includes(route)) {
                 this.getUiModel().setProperty("/tab", route);
                 if (this.isServiceOutdated()) {
                     void this.initView();

@@ -4,6 +4,17 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "../util/liabilityRules"], functio
   const TRANSACTION_TYPE_OPTIONS = ___util_liabilityRules["TRANSACTION_TYPE_OPTIONS"];
   class UiModel extends JSONModel {
     constructor() {
+      super(UiModel.initialState());
+    }
+
+    /**
+     * Back to the initial state, so nothing of the previous user (selected
+     * person, lists, dialogs) survives a sign-out.
+     */
+    reset() {
+      this.setData(UiModel.initialState());
+    }
+    static initialState() {
       const now = new Date();
       const today = new Date().toISOString().slice(0, 10);
       const data = {
@@ -203,7 +214,7 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "../util/liabilityRules"], functio
           transactionImages: {}
         }
       };
-      super(data);
+      return data;
     }
   }
   return UiModel;

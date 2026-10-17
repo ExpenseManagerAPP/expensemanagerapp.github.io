@@ -121,7 +121,7 @@
 		},
 		"routing": {
 			"config": {
-				"routerClass": "sap.m.routing.Router",
+				"routerClass": "apps.dflc.expensemanager.routing.AppRouter",
 				"controlAggregation": "pages",
 				"controlId": "app",
 				"transition": "slide",
@@ -178,12 +178,21 @@
 					"name": "Login",
 					"pattern": "login",
 					"target": "Login"
+				},
+				{
+					"name": "ChangePassword",
+					"pattern": "change-password",
+					"target": "ChangePassword"
 				}
 			],
 			"targets": {
 				"Login": {
 					"id": "Login",
 					"name": "Login"
+				},
+				"ChangePassword": {
+					"id": "ChangePassword",
+					"name": "ChangePassword"
 				},
 				"Home": {
 					"id": "Home",

@@ -6,4 +6,5 @@ export const PERSON_CHANNEL = "expenseManager.person";
 
 export const PERSON_SELECTED = "selected";
 
+/** The person bindings must be released: the draft is closing or the user signed out. */
 export const PERSON_DRAFT_CLOSING = "draftClosing";

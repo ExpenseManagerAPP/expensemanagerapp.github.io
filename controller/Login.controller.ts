@@ -1,16 +1,17 @@
 import JSONModel from "sap/ui/model/json/JSONModel";
 import type Input from "sap/m/Input";
-import MessageToast from "sap/m/MessageToast";
 import { BaseController } from "./BaseController";
 import { AuthenticationService } from "../auth/AuthenticationService";
-import { AuthRequestError } from "../auth/providers/XsuaaAuthHelper";
+import { AuthRequestError } from "../auth/AuthApi";
 import { LoginPreferences } from "../auth/storage/LoginPreferences";
 
 const LOGIN_ERRORS: Record<string, string> = {
     invalid_credentials: "loginInvalidCredentials",
     too_many_attempts: "loginTooManyAttempts",
     missing_credentials: "loginRequired",
-    backend_unavailable: "backendUnavailableLogin"
+    backend_unavailable: "backendUnavailableLogin",
+    account_pending: "loginAccountPending",
+    account_disabled: "loginAccountDisabled"
 };
 
 interface LoginState {
@@ -29,7 +30,7 @@ export default class Login extends BaseController {
         void AuthenticationService.isAuthenticated()
             .then((authenticated) => {
                 if (authenticated) {
-                    this.navTo("Home");
+                    this.navTo(this.landingRoute());
                 }
             })
             .catch(() => {
@@ -58,7 +59,7 @@ export default class Login extends BaseController {
             await AuthenticationService.loginWithPassword(email.trim(), password);
             LoginPreferences.saveEmail(email.trim());
             this.loginModel.setData(this.initialState());
-            this.navTo("Home");
+            this.navTo(this.landingRoute());
         } catch (error) {
             this.loginModel.setProperty("/password", "");
             this.loginModel.setProperty("/error", this.getText(this.errorKey(error)));
@@ -69,17 +70,10 @@ export default class Login extends BaseController {
     }
 
     /**
-     * Alternative sign-in through the SAP login page (authorization code flow).
+     * Users created by an admin (or imported) must choose their own password first.
      */
-    public async onLogin(): Promise<void> {
-        try {
-            await AuthenticationService.login();
-        } catch (error) {
-            this.showBackendUnavailable();
-            return;
-        }
-
-        MessageToast.show(this.getText("loginRedirecting"));
+    private landingRoute(): string {
+        return AuthenticationService.mustChangePassword() ? "ChangePassword" : "Home";
     }
 
     private validate(email: string, password: string): boolean {

@@ -22,6 +22,9 @@ sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox",
   const PERSON_CHANNEL = ___util_personEvents["PERSON_CHANNEL"];
   const PERSON_DRAFT_CLOSING = ___util_personEvents["PERSON_DRAFT_CLOSING"];
   const PERSON_SELECTED = ___util_personEvents["PERSON_SELECTED"];
+  /** Routes shown outside the workspace shell (no person, no tabs). */
+  const OUTSIDE_WORKSPACE_ROUTES = ["Login", "ChangePassword"];
+
   /**
    * Orchestrates the Home dashboard. Loading, selection and image/media state
    * is delegated to focused services (PeriodService, MediaService,
@@ -37,7 +40,7 @@ sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox",
       this.getOwnerComponent().setWorkspace(this);
       this.getRouter().attachRouteMatched(event => {
         const route = event.getParameter("name");
-        if (route && route !== "Login") {
+        if (route && !OUTSIDE_WORKSPACE_ROUTES.includes(route)) {
           this.getUiModel().setProperty("/tab", route);
           if (this.isServiceOutdated()) {
             void this.initView();

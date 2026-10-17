@@ -1,14 +1,14 @@
-sap.ui.define(["../auth/AuthenticationService", "../auth/providers/XsuaaAuthHelper"], function (___auth_AuthenticationService, ___auth_providers_XsuaaAuthHelper) {
+sap.ui.define(["../auth/AuthenticationService", "../auth/AuthApi"], function (___auth_AuthenticationService, ___auth_AuthApi) {
   "use strict";
 
   const AuthenticationService = ___auth_AuthenticationService["AuthenticationService"];
-  const XsuaaAuthHelper = ___auth_providers_XsuaaAuthHelper["XsuaaAuthHelper"];
+  const AuthApi = ___auth_AuthApi["AuthApi"];
   function getToken() {
     const session = AuthenticationService.getSession();
     return session?.accessToken || "";
   }
   function getOdataServiceUrl() {
-    return XsuaaAuthHelper.getConfig().odataService;
+    return AuthApi.getConfig().odataService;
   }
   function buildHeaders(init) {
     const headers = new Headers(init.headers || {});

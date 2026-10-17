@@ -1,0 +1,2 @@
+sap.ui.define(["sap/m/routing/Router"],function(t){"use strict";const n=t.extend("apps.dflc.expensemanager.routing.AppRouter",{constructor:function n(){t.prototype.constructor.apply(this,arguments);this.guard=null},setGuard:function t(n){this.guard=n},parse:function n(r){const e=this.getRouteInfoByHash(r)?.name??"";const o=this.guard?.(e);if(o&&o!==e){this.navTo(o,{},true);return}t.prototype.parse.call(this,r)}});return n});
+//# sourceMappingURL=AppRouter.js.map

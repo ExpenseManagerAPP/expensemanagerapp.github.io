@@ -1,4 +1,4 @@
-sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "sap/m/MessageBox", "./model/models", "./model/UiModel", "./auth/AuthenticationService", "./auth/providers/AuthenticatedProviderFactory", "./auth/providers/XsuaaAuthHelper", "./auth/storage/SessionStorage", "./util/Environment", "./util/http", "./util/feedback", "./util/theme"], function (BaseComponent, ODataModel, MessageBox, ___model_models, __UiModel, ___auth_AuthenticationService, ___auth_providers_AuthenticatedProviderFactory, ___auth_providers_XsuaaAuthHelper, ___auth_storage_SessionStorage, __Environment, ___util_http, ___util_feedback, ___util_theme) {
+sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "sap/m/MessageBox", "./model/models", "./model/UiModel", "./auth/AuthenticationService", "./auth/providers/AuthenticatedProviderFactory", "./auth/AuthApi", "./auth/storage/SessionStorage", "./util/Environment", "./util/http", "./util/feedback", "./util/theme", "./util/personEvents"], function (BaseComponent, ODataModel, MessageBox, ___model_models, __UiModel, ___auth_AuthenticationService, ___auth_providers_AuthenticatedProviderFactory, ___auth_AuthApi, ___auth_storage_SessionStorage, __Environment, ___util_http, ___util_feedback, ___util_theme, ___util_personEvents) {
   "use strict";
 
   function _interopRequireDefault(obj) {
@@ -8,7 +8,7 @@ sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "s
   const UiModel = _interopRequireDefault(__UiModel);
   const AuthenticationService = ___auth_AuthenticationService["AuthenticationService"];
   const AuthenticatedProviderFactory = ___auth_providers_AuthenticatedProviderFactory["AuthenticatedProviderFactory"];
-  const XsuaaAuthHelper = ___auth_providers_XsuaaAuthHelper["XsuaaAuthHelper"];
+  const AuthApi = ___auth_AuthApi["AuthApi"];
   const SessionStorage = ___auth_storage_SessionStorage["SessionStorage"];
   const Environment = _interopRequireDefault(__Environment);
   const EnvironmentType = __Environment["EnvironmentType"];
@@ -16,6 +16,10 @@ sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "s
   const isBackendUnavailableError = ___util_http["isBackendUnavailableError"];
   const getBackendErrorMessage = ___util_feedback["getBackendErrorMessage"];
   const ensureThemeApplied = ___util_theme["ensureThemeApplied"];
+  const PERSON_CHANNEL = ___util_personEvents["PERSON_CHANNEL"];
+  const PERSON_DRAFT_CLOSING = ___util_personEvents["PERSON_DRAFT_CLOSING"];
+  const TOKEN_RETRY_MS = 5000;
+
   /**
    * @namespace apps.dflc.expensemanager
    */
@@ -47,28 +51,31 @@ sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "s
       BaseComponent.prototype.init.call(this);
       ensureThemeApplied();
       try {
-        await XsuaaAuthHelper.loadRuntimeConfig();
+        await AuthApi.loadRuntimeConfig();
       } catch (error) {
         console.error("[init] runtime-config.json", error);
       }
       this.registerGlobalErrorHandlers();
       AuthenticationService.initialize(AuthenticatedProviderFactory.create());
       AuthenticationService.onSessionExpired(() => this.handleSessionExpired());
+      AuthenticationService.onSessionRefreshed(session => this.applyAccessToken(session.accessToken));
+      AuthenticationService.onSignedOut(() => this.resetServiceModel());
       AuthenticationService.onAuthError(message => this.handleAuthError(message));
       this.setModel(createDeviceModel(), "device");
       this.setModel(new UiModel(), "ui");
       const environment = Environment.current();
       if (environment === EnvironmentType.GITHUB) {
         // The service model is provisioned lazily by the route guard and the controllers.
-      } else if (environment === EnvironmentType.LOCAL && XsuaaAuthHelper.getConfig().auth) {
-        XsuaaAuthHelper.setLocalOverrides();
+      } else if (environment === EnvironmentType.LOCAL && AuthApi.getConfig().auth) {
+        AuthApi.setLocalOverrides();
       } else if (environment === EnvironmentType.BTP) {
         this.prepareBtpServiceModel();
       } else {
         this.prepareStandaloneServiceModel();
       }
-      this.getRouter().initialize();
-      this.getRouter().attachBeforeRouteMatched(event => this.handleBeforeRouteMatched(event));
+      const router = this.getRouter();
+      router.setGuard(routeName => this.guardRoute(routeName));
+      router.initialize();
     },
     /**
      * Last-resort safety net: surfaces unexpected async failures and window
@@ -117,6 +124,9 @@ sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "s
      * @returns {Promise<ODataModel | null>} the shared service model, or null when not authenticated
      */
     ensureServiceModel: function _ensureServiceModel() {
+      if (AuthenticationService.mustChangePassword()) {
+        return Promise.resolve(null);
+      }
       const current = this.getModel();
       if (current && this.isModelTokenCurrent()) {
         return Promise.resolve(current);
@@ -156,33 +166,53 @@ sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "s
       }
       return null;
     },
-    handleBeforeRouteMatched: function _handleBeforeRouteMatched(event) {
+    /**
+     * Picks the route to show instead of the requested one: the login page
+     * without a session, the password change while it is pending, and the
+     * workspace when a signed-in user opens the login page.
+     *
+     * @param {string} routeName the requested route
+     * @returns {string | null} the route to show instead, or null to allow it
+     */
+    guardRoute: function _guardRoute(routeName) {
       if (!this.isAuthRequired()) {
-        return;
+        return null;
       }
-      const target = event.getParameter("name") ?? "";
-      const session = AuthenticationService.getSession();
-      const authenticated = !!session?.accessToken && session.expiresAt > Date.now();
-      if (target !== "Login" && !authenticated) {
-        if (!AuthenticationService.isAuthErrorPending()) {
-          this.getRouter().navTo("Login");
-        }
-      } else if (target === "Login" && authenticated) {
-        this.getRouter().navTo("Home");
+      const authenticated = AuthenticationService.hasValidSession();
+      const mustChangePassword = authenticated && AuthenticationService.mustChangePassword();
+      if (!authenticated) {
+        return routeName === "Login" || AuthenticationService.isAuthErrorPending() ? null : "Login";
       }
+      if (mustChangePassword) {
+        return routeName === "ChangePassword" ? null : "ChangePassword";
+      }
+      return routeName === "Login" || routeName === "ChangePassword" ? "Home" : null;
+    },
+    /**
+     * Drops the service model and the UI state on sign-out, so the next user
+     * never sees data cached for the previous one.
+     */
+    resetServiceModel: function _resetServiceModel() {
+      const model = this.getModel();
+      this.getEventBus().publish(PERSON_CHANNEL, PERSON_DRAFT_CLOSING);
+      this._serviceModelPromise = null;
+      this._modelToken = "";
+      this.setModel(null);
+      model?.destroy();
+      this.getModel("ui").reset();
     },
     isAuthRequired: function _isAuthRequired() {
       const environment = Environment.current();
       if (environment === EnvironmentType.GITHUB) {
         return true;
       }
-      if (environment === EnvironmentType.LOCAL && XsuaaAuthHelper.getConfig().auth) {
+      if (environment === EnvironmentType.LOCAL && AuthApi.getConfig().auth) {
         return true;
       }
       return false;
     },
     setServiceModel: function _setServiceModel(accessToken) {
-      const config = XsuaaAuthHelper.getConfig();
+      const config = AuthApi.getConfig();
       const httpHeaders = {};
       const previous = this.getModel();
       if (accessToken) {
@@ -201,6 +231,31 @@ sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "s
       previous?.destroy();
     },
     /**
+     * Sends the renewed access token with the next requests of the service
+     * model. The header cannot change while the model has pending changes, so
+     * it is retried shortly until those are submitted.
+     *
+     * @param {string} accessToken the renewed access token
+     */
+    applyAccessToken: function _applyAccessToken(accessToken) {
+      const model = this.getModel();
+      if (!model || !this._modelToken) {
+        return;
+      }
+      try {
+        model.changeHttpHeaders({
+          Authorization: `Bearer ${accessToken}`
+        });
+        this._modelToken = accessToken;
+      } catch {
+        setTimeout(() => {
+          if (AuthenticationService.getSession()?.accessToken === accessToken) {
+            this.applyAccessToken(accessToken);
+          }
+        }, TOKEN_RETRY_MS);
+      }
+    },
+    /**
      * Returns the app base path on the managed app router / launchpad
      * (e.g. `/<dest-guid>.<app-name>.<artifact>-<version>`), used to prefix the
      * OData service URL so the managed app router routes requests back to this
@@ -211,11 +266,11 @@ sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "s
       return pathname.replace(/\/index\.html$/, "").replace(/\/+$/, "");
     },
     prepareBtpServiceModel: function _prepareBtpServiceModel() {
-      XsuaaAuthHelper.setServiceUrl(`${this.getLaunchpadAppBasePath()}/api/service/ExpenseManager/`);
+      AuthApi.setServiceUrl(`${this.getLaunchpadAppBasePath()}/api/service/ExpenseManager/`);
       this.setServiceModel("");
     },
     prepareStandaloneServiceModel: function _prepareStandaloneServiceModel() {
-      if (!XsuaaAuthHelper.getConfig().odataService) {
+      if (!AuthApi.getConfig().odataService) {
         this.applyManifestServiceUrl();
       }
       this.setServiceModel("");
@@ -224,7 +279,7 @@ sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "s
       const manifest = this.getManifestObject();
       const uri = manifest?.get?.("/sap.app/dataSources/mainService/uri");
       if (uri) {
-        XsuaaAuthHelper.setServiceUrl(uri);
+        AuthApi.setServiceUrl(uri);
       }
     },
     handleSessionExpired: function _handleSessionExpired() {

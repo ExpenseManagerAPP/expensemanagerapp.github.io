@@ -1,15 +1,17 @@
-sap.ui.define(["sap/ui/model/json/JSONModel", "sap/m/MessageToast", "./BaseController", "../auth/AuthenticationService", "../auth/providers/XsuaaAuthHelper", "../auth/storage/LoginPreferences"], function (JSONModel, MessageToast, ___BaseController, ___auth_AuthenticationService, ___auth_providers_XsuaaAuthHelper, ___auth_storage_LoginPreferences) {
+sap.ui.define(["sap/ui/model/json/JSONModel", "./BaseController", "../auth/AuthenticationService", "../auth/AuthApi", "../auth/storage/LoginPreferences"], function (JSONModel, ___BaseController, ___auth_AuthenticationService, ___auth_AuthApi, ___auth_storage_LoginPreferences) {
   "use strict";
 
   const BaseController = ___BaseController["BaseController"];
   const AuthenticationService = ___auth_AuthenticationService["AuthenticationService"];
-  const AuthRequestError = ___auth_providers_XsuaaAuthHelper["AuthRequestError"];
+  const AuthRequestError = ___auth_AuthApi["AuthRequestError"];
   const LoginPreferences = ___auth_storage_LoginPreferences["LoginPreferences"];
   const LOGIN_ERRORS = {
     invalid_credentials: "loginInvalidCredentials",
     too_many_attempts: "loginTooManyAttempts",
     missing_credentials: "loginRequired",
-    backend_unavailable: "backendUnavailableLogin"
+    backend_unavailable: "backendUnavailableLogin",
+    account_pending: "loginAccountPending",
+    account_disabled: "loginAccountDisabled"
   };
   class Login extends BaseController {
     onInit() {
@@ -17,7 +19,7 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "sap/m/MessageToast", "./BaseContr
       this.getView()?.setModel(this.loginModel, "login");
       void AuthenticationService.isAuthenticated().then(authenticated => {
         if (authenticated) {
-          this.navTo("Home");
+          this.navTo(this.landingRoute());
         }
       }).catch(() => {
         this.showBackendUnavailable();
@@ -44,7 +46,7 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "sap/m/MessageToast", "./BaseContr
         await AuthenticationService.loginWithPassword(email.trim(), password);
         LoginPreferences.saveEmail(email.trim());
         this.loginModel.setData(this.initialState());
-        this.navTo("Home");
+        this.navTo(this.landingRoute());
       } catch (error) {
         this.loginModel.setProperty("/password", "");
         this.loginModel.setProperty("/error", this.getText(this.errorKey(error)));
@@ -55,16 +57,10 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "sap/m/MessageToast", "./BaseContr
     }
 
     /**
-     * Alternative sign-in through the SAP login page (authorization code flow).
+     * Users created by an admin (or imported) must choose their own password first.
      */
-    async onLogin() {
-      try {
-        await AuthenticationService.login();
-      } catch (error) {
-        this.showBackendUnavailable();
-        return;
-      }
-      MessageToast.show(this.getText("loginRedirecting"));
+    landingRoute() {
+      return AuthenticationService.mustChangePassword() ? "ChangePassword" : "Home";
     }
     validate(email, password) {
       const emailState = email.trim() ? "None" : "Error";

@@ -1,20 +1,23 @@
 import BaseComponent from "sap/ui/core/UIComponent";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
-import type { Router$BeforeRouteMatchedEvent } from "sap/ui/core/routing/Router";
+import type AppRouter from "./routing/AppRouter";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import { createDeviceModel } from "./model/models";
 import UiModel from "./model/UiModel";
 import { AuthenticationService } from "./auth/AuthenticationService";
 import { AuthenticatedProviderFactory } from "./auth/providers/AuthenticatedProviderFactory";
-import { XsuaaAuthHelper } from "./auth/providers/XsuaaAuthHelper";
+import { AuthApi } from "./auth/AuthApi";
 import { SessionStorage } from "./auth/storage/SessionStorage";
 import Environment, { EnvironmentType } from "./util/Environment";
 import { isSessionExpiredError, isBackendUnavailableError } from "./util/http";
 import { getBackendErrorMessage } from "./util/feedback";
 import { ensureThemeApplied } from "./util/theme";
+import { PERSON_CHANNEL, PERSON_DRAFT_CLOSING } from "./util/personEvents";
 import type Home from "./controller/Home.controller";
+
+const TOKEN_RETRY_MS = 5000;
 
 /**
  * @namespace apps.dflc.expensemanager
@@ -54,7 +57,7 @@ export default class Component extends BaseComponent {
         ensureThemeApplied();
 
         try {
-            await XsuaaAuthHelper.loadRuntimeConfig();
+            await AuthApi.loadRuntimeConfig();
         } catch (error) {
             console.error("[init] runtime-config.json", error);
         }
@@ -66,6 +69,8 @@ export default class Component extends BaseComponent {
         );
 
         AuthenticationService.onSessionExpired(() => this.handleSessionExpired());
+        AuthenticationService.onSessionRefreshed((session) => this.applyAccessToken(session.accessToken));
+        AuthenticationService.onSignedOut(() => this.resetServiceModel());
         AuthenticationService.onAuthError((message) => this.handleAuthError(message));
 
         this.setModel(createDeviceModel(), "device");
@@ -75,16 +80,17 @@ export default class Component extends BaseComponent {
 
         if (environment === EnvironmentType.GITHUB) {
             // The service model is provisioned lazily by the route guard and the controllers.
-        } else if (environment === EnvironmentType.LOCAL && XsuaaAuthHelper.getConfig().auth) {
-            XsuaaAuthHelper.setLocalOverrides();
+        } else if (environment === EnvironmentType.LOCAL && AuthApi.getConfig().auth) {
+            AuthApi.setLocalOverrides();
         } else if (environment === EnvironmentType.BTP) {
             this.prepareBtpServiceModel();
         } else {
             this.prepareStandaloneServiceModel();
         }
 
-        this.getRouter().initialize();
-        this.getRouter().attachBeforeRouteMatched((event) => this.handleBeforeRouteMatched(event));
+        const router = this.getRouter() as AppRouter;
+        router.setGuard((routeName) => this.guardRoute(routeName));
+        router.initialize();
     }
 
     /**
@@ -139,6 +145,10 @@ export default class Component extends BaseComponent {
      * @returns {Promise<ODataModel | null>} the shared service model, or null when not authenticated
      */
     public ensureServiceModel(): Promise<ODataModel | null> {
+        if (AuthenticationService.mustChangePassword()) {
+            return Promise.resolve(null);
+        }
+
         const current = this.getModel() as ODataModel | undefined;
 
         if (current && this.isModelTokenCurrent()) {
@@ -190,22 +200,46 @@ export default class Component extends BaseComponent {
         return null;
     }
 
-    private handleBeforeRouteMatched(event: Router$BeforeRouteMatchedEvent): void {
+    /**
+     * Picks the route to show instead of the requested one: the login page
+     * without a session, the password change while it is pending, and the
+     * workspace when a signed-in user opens the login page.
+     *
+     * @param {string} routeName the requested route
+     * @returns {string | null} the route to show instead, or null to allow it
+     */
+    private guardRoute(routeName: string): string | null {
         if (!this.isAuthRequired()) {
-            return;
+            return null;
         }
 
-        const target = event.getParameter("name") ?? "";
-        const session = AuthenticationService.getSession();
-        const authenticated = !!session?.accessToken && session.expiresAt > Date.now();
+        const authenticated = AuthenticationService.hasValidSession();
+        const mustChangePassword = authenticated && AuthenticationService.mustChangePassword();
 
-        if (target !== "Login" && !authenticated) {
-            if (!AuthenticationService.isAuthErrorPending()) {
-                this.getRouter().navTo("Login");
-            }
-        } else if (target === "Login" && authenticated) {
-            this.getRouter().navTo("Home");
+        if (!authenticated) {
+            return routeName === "Login" || AuthenticationService.isAuthErrorPending() ? null : "Login";
         }
+
+        if (mustChangePassword) {
+            return routeName === "ChangePassword" ? null : "ChangePassword";
+        }
+
+        return routeName === "Login" || routeName === "ChangePassword" ? "Home" : null;
+    }
+
+    /**
+     * Drops the service model and the UI state on sign-out, so the next user
+     * never sees data cached for the previous one.
+     */
+    private resetServiceModel(): void {
+        const model = this.getModel() as ODataModel | undefined;
+
+        this.getEventBus().publish(PERSON_CHANNEL, PERSON_DRAFT_CLOSING);
+        this._serviceModelPromise = null;
+        this._modelToken = "";
+        this.setModel(null as unknown as ODataModel);
+        model?.destroy();
+        (this.getModel("ui") as UiModel).reset();
     }
 
     private isAuthRequired(): boolean {
@@ -215,7 +249,7 @@ export default class Component extends BaseComponent {
             return true;
         }
 
-        if (environment === EnvironmentType.LOCAL && XsuaaAuthHelper.getConfig().auth) {
+        if (environment === EnvironmentType.LOCAL && AuthApi.getConfig().auth) {
             return true;
         }
 
@@ -223,7 +257,7 @@ export default class Component extends BaseComponent {
     }
 
     private setServiceModel(accessToken: string): void {
-        const config = XsuaaAuthHelper.getConfig();
+        const config = AuthApi.getConfig();
         const httpHeaders: Record<string, string> = {};
         const previous = this.getModel() as ODataModel | undefined;
 
@@ -247,6 +281,32 @@ export default class Component extends BaseComponent {
     }
 
     /**
+     * Sends the renewed access token with the next requests of the service
+     * model. The header cannot change while the model has pending changes, so
+     * it is retried shortly until those are submitted.
+     *
+     * @param {string} accessToken the renewed access token
+     */
+    private applyAccessToken(accessToken: string): void {
+        const model = this.getModel() as ODataModel | undefined;
+
+        if (!model || !this._modelToken) {
+            return;
+        }
+
+        try {
+            model.changeHttpHeaders({ Authorization: `Bearer ${accessToken}` });
+            this._modelToken = accessToken;
+        } catch {
+            setTimeout(() => {
+                if (AuthenticationService.getSession()?.accessToken === accessToken) {
+                    this.applyAccessToken(accessToken);
+                }
+            }, TOKEN_RETRY_MS);
+        }
+    }
+
+    /**
      * Returns the app base path on the managed app router / launchpad
      * (e.g. `/<dest-guid>.<app-name>.<artifact>-<version>`), used to prefix the
      * OData service URL so the managed app router routes requests back to this
@@ -258,12 +318,12 @@ export default class Component extends BaseComponent {
     }
 
     private prepareBtpServiceModel(): void {
-        XsuaaAuthHelper.setServiceUrl(`${this.getLaunchpadAppBasePath()}/api/service/ExpenseManager/`);
+        AuthApi.setServiceUrl(`${this.getLaunchpadAppBasePath()}/api/service/ExpenseManager/`);
         this.setServiceModel("");
     }
 
     private prepareStandaloneServiceModel(): void {
-        if (!XsuaaAuthHelper.getConfig().odataService) {
+        if (!AuthApi.getConfig().odataService) {
             this.applyManifestServiceUrl();
         }
         this.setServiceModel("");
@@ -274,7 +334,7 @@ export default class Component extends BaseComponent {
         const uri = manifest?.get?.("/sap.app/dataSources/mainService/uri") as string | undefined;
 
         if (uri) {
-            XsuaaAuthHelper.setServiceUrl(uri);
+            AuthApi.setServiceUrl(uri);
         }
     }
 
