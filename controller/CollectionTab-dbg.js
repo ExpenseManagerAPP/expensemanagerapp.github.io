@@ -182,6 +182,9 @@ sap.ui.define(["sap/m/Avatar", "sap/m/MessageBox", "sap/m/CustomListItem", "./Pe
         void context.delete().catch(() => undefined);
       };
       binding.attachCreateCompleted(handler);
+      // A rejected entry is removed above (the backend message is shown by
+      // the model messages); its "created" promise then rejects as canceled.
+      context.created()?.catch(() => undefined);
     }
 
     /**
