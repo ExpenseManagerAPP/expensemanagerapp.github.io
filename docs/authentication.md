@@ -28,6 +28,17 @@ O `custom-proxy` remove o prefixo `/api` das rotas OData e repassa `/auth` como 
 - troca de senha pendente → `#/change-password` (os serviços recusam o usuário até a troca);
 - já logado abrindo o login ou a troca de senha → início.
 
+## Criar conta e esqueci a senha
+
+| Rota | Tela |
+|---|---|
+| `#/signup` | Criar conta (nome, email, senha). Mostra se foi enviado um link de confirmação ou se a conta aguarda aprovação do admin |
+| `#/forgot-password` | Pede o link de redefinição; a resposta é a mesma para qualquer email |
+| `#/confirm-email/{token}` | Aberta pelo email de confirmação: ativa a conta e já entra no app |
+| `#/reset-password/{token}` | Aberta pelo email de redefinição: define a nova senha e já entra no app |
+
+`#/signup` e `#/forgot-password` são só para quem não está logado; os links de email abrem com ou sem sessão. As listas ficam em `webapp/routing/routes.ts`, usadas pelo guard do `Component` e pela Home.
+
 ## Arquivos
 
 | Arquivo | Papel |
@@ -38,4 +49,6 @@ O `custom-proxy` remove o prefixo `/api` das rotas OData e repassa `/auth` como 
 | `webapp/auth/providers/MockAuthenticationProvider.ts` | Provider do modo mock |
 | `webapp/routing/AppRouter.ts` | Router com guard |
 | `webapp/controller/Login.controller.ts` / `ChangePassword.controller.ts` | Telas de login e troca de senha |
+| `webapp/controller/AccountPage.ts` | Base das telas de conta (formulário, validação, erros) |
+| `webapp/controller/Signup`, `ForgotPassword`, `ResetPassword`, `ConfirmEmail` | Telas de criar conta, esqueci a senha, nova senha e confirmação |
 | `webapp/util/http.ts` | `fetch` autenticado (CSRF, 401 → sessão expirada) |

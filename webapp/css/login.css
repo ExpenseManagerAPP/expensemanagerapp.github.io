@@ -276,10 +276,35 @@
     color: var(--teal-800) !important;
 }
 
+/* Com foco o tema pinta o fundo na cor de foco: o texto precisa contrastar */
+.loginLink.sapMLnk:focus,
+.loginLink.sapMLnk:focus .sapMLnkText {
+    color: #ffffff !important;
+}
+
 .changePasswordAside.loginAside {
     width: 100%;
     min-height: 100vh;
     background: transparent;
     border-radius: 0;
     box-shadow: none;
+}
+
+.loginForgotRow {
+    width: 100%;
+    margin: .35rem 0 .2rem;
+}
+
+.loginSignupRow {
+    gap: .25rem;
+    margin-top: .25rem;
+}
+
+.loginSignupHint {
+    color: var(--muted);
+    font-size: .8rem;
+}
+
+.accountDone {
+    width: 100%;
 }

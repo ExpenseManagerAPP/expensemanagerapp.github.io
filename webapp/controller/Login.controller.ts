@@ -38,6 +38,14 @@ export default class Login extends BaseController {
             });
     }
 
+    public onOpenSignup(): void {
+        this.navTo("Signup");
+    }
+
+    public onOpenForgotPassword(): void {
+        this.navTo("ForgotPassword");
+    }
+
     public onTogglePassword(): void {
         this.loginModel.setProperty("/showPassword", !this.loginModel.getProperty("/showPassword"));
     }
