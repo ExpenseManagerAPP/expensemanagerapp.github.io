@@ -37,120 +37,212 @@
                     </VBox>
                 </HBox>
 
-                <HBox alignItems="Center" justifyContent="SpaceBetween" wrap="Wrap" class="surfaceCard adminToolbar">
-                    <SegmentedButton
-                        selectedKey="{adminView>/status}"
-                        selectionChange=".onFilterChange"
-                        width="30rem"
-                        class="adminStatusFilter"
-                    >
-                        <items>
-                            <SegmentedButtonItem key="All" text="{i18n>adminFilterAll}" />
-                            <SegmentedButtonItem key="Pending" text="{i18n>adminStatusPending}" />
-                            <SegmentedButtonItem key="Active" text="{i18n>adminStatusActive}" />
-                            <SegmentedButtonItem key="Disabled" text="{i18n>adminStatusDisabled}" />
-                        </items>
-                    </SegmentedButton>
-                    <Select
-                        selectedKey="{adminView>/status}"
-                        change=".onFilterChange"
-                        width="100%"
-                        class="adminStatusSelect"
-                    >
-                        <core:Item key="All" text="{i18n>adminFilterAll}" />
-                        <core:Item key="Pending" text="{i18n>adminStatusPending}" />
-                        <core:Item key="Active" text="{i18n>adminStatusActive}" />
-                        <core:Item key="Disabled" text="{i18n>adminStatusDisabled}" />
-                    </Select>
-                    <HBox alignItems="Center" class="adminToolbarActions">
-                        <SearchField
-                            value="{adminView>/query}"
-                            placeholder="{i18n>adminSearch}"
-                            search=".onSearch"
-                            liveChange=".onSearch"
-                            width="16rem"
-                        />
-                        <Button text="{i18n>adminCreateUser}" icon="sap-icon://add-employee" type="Emphasized" press=".onOpenCreateUser" />
-                    </HBox>
-                </HBox>
-
-                <List
-                    id="usersList"
-                    items="{
-                        path: 'admin>/Users',
-                        sorter: { path: 'Email' }
-                    }"
-                    growing="true"
-                    growingThreshold="50"
-                    showSeparators="None"
-                    noDataText="{i18n>adminNoUsers}"
-                    class="cardTileList adminUserList"
+                <IconTabBar
+                    id="adminTabs"
+                    selectedKey="{adminView>/tab}"
+                    select=".onAdminTabSelect"
+                    headerMode="Inline"
+                    expandable="false"
+                    applyContentPadding="false"
+                    backgroundDesign="Transparent"
+                    class="sectionTabs adminTabs"
                 >
-                    <CustomListItem class="cardTile">
-                        <VBox class="cardTileBody">
-                            <HBox alignItems="Center" class="cardTileHeader">
-                                <Avatar
-                                    initials="{ path: 'admin>Name', formatter: 'formatter.initials' }"
-                                    displaySize="Custom"
-                                    customDisplaySize="2.6rem"
-                                    displayShape="Circle"
-                                    fallbackIcon="sap-icon://person-placeholder"
-                                    class="cardTileAvatar"
+                    <items>
+                    <IconTabFilter key="users" icon="sap-icon://group" text="{i18n>adminTabUsers}">
+                        <VBox class="adminUsersPanel">
+                        <HBox alignItems="Center" justifyContent="SpaceBetween" wrap="Wrap" class="surfaceCard adminToolbar">
+                            <SegmentedButton
+                                selectedKey="{adminView>/status}"
+                                selectionChange=".onFilterChange"
+                                width="30rem"
+                                class="adminStatusFilter"
+                            >
+                                <items>
+                                    <SegmentedButtonItem key="All" text="{i18n>adminFilterAll}" />
+                                    <SegmentedButtonItem key="Pending" text="{i18n>adminStatusPending}" />
+                                    <SegmentedButtonItem key="Active" text="{i18n>adminStatusActive}" />
+                                    <SegmentedButtonItem key="Disabled" text="{i18n>adminStatusDisabled}" />
+                                </items>
+                            </SegmentedButton>
+                            <Select
+                                selectedKey="{adminView>/status}"
+                                change=".onFilterChange"
+                                width="100%"
+                                class="adminStatusSelect"
+                            >
+                                <core:Item key="All" text="{i18n>adminFilterAll}" />
+                                <core:Item key="Pending" text="{i18n>adminStatusPending}" />
+                                <core:Item key="Active" text="{i18n>adminStatusActive}" />
+                                <core:Item key="Disabled" text="{i18n>adminStatusDisabled}" />
+                            </Select>
+                            <HBox alignItems="Center" class="adminToolbarActions">
+                                <SearchField
+                                    value="{adminView>/query}"
+                                    placeholder="{i18n>adminSearch}"
+                                    search=".onSearch"
+                                    liveChange=".onSearch"
+                                    width="16rem"
                                 />
-                                <VBox class="cardTileTitle">
-                                    <Title text="{= ${path: 'admin>Name', targetType: 'any'} || ${path: 'admin>Email', targetType: 'any'} }" level="H4" wrapping="true" />
-                                    <Text text="{admin>Email}" class="sectionHint adminEmail" />
+                                <Button text="{i18n>adminCreateUser}" icon="sap-icon://add-employee" type="Emphasized" press=".onOpenCreateUser" />
+                            </HBox>
+                        </HBox>
+
+                        <List
+                            id="usersList"
+                            items="{
+                                path: 'admin>/Users',
+                                sorter: { path: 'Email' }
+                            }"
+                            growing="true"
+                            growingThreshold="50"
+                            showSeparators="None"
+                            noDataText="{i18n>adminNoUsers}"
+                            class="cardTileList adminUserList"
+                        >
+                            <CustomListItem class="cardTile">
+                                <VBox class="cardTileBody">
+                                    <HBox alignItems="Center" class="cardTileHeader">
+                                        <Avatar
+                                            initials="{ path: 'admin>Name', formatter: 'formatter.initials' }"
+                                            displaySize="Custom"
+                                            customDisplaySize="2.6rem"
+                                            displayShape="Circle"
+                                            fallbackIcon="sap-icon://person-placeholder"
+                                            class="cardTileAvatar"
+                                        />
+                                        <VBox class="cardTileTitle">
+                                            <Title text="{= ${path: 'admin>Name', targetType: 'any'} || ${path: 'admin>Email', targetType: 'any'} }" level="H4" wrapping="true" />
+                                            <Text text="{admin>Email}" class="sectionHint adminEmail" />
+                                        </VBox>
+                                    </HBox>
+
+                                    <HBox wrap="Wrap" alignItems="Center" class="adminBadges">
+                                        <ObjectStatus
+                                            text="{= ${path: 'admin>Status', targetType: 'any'} === 'Pending' ? ${i18n>adminBadgePending} : (${path: 'admin>Status', targetType: 'any'} === 'Disabled' ? ${i18n>adminBadgeDisabled} : ${i18n>adminBadgeActive}) }"
+                                            state="{= ${path: 'admin>Status', targetType: 'any'} === 'Pending' ? 'Warning' : (${path: 'admin>Status', targetType: 'any'} === 'Disabled' ? 'Error' : 'Success') }"
+                                            inverted="true"
+                                        />
+                                        <ObjectStatus text="{i18n>adminRoleAdmin}" state="Information" inverted="true" visible="{= ${path: 'admin>Role', targetType: 'any'} === 'Admin' }" />
+                                        <ObjectStatus text="{i18n>adminNoPassword}" state="None" inverted="true" visible="{= !${path: 'admin>HasPassword', targetType: 'any'} }" />
+                                        <ObjectStatus text="{i18n>adminMustChange}" state="None" inverted="true" visible="{= ${path: 'admin>HasPassword', targetType: 'any'} &amp;&amp; ${path: 'admin>MustChangePassword', targetType: 'any'} }" />
+                                        <Text
+                                            text="{ parts: [ 'i18n>adminLastLogin', { path: 'admin>LastLoginAt', formatter: 'formatter.formatDate' } ], formatter: 'formatter.formatTemplate' }"
+                                            visible="{= !!${path: 'admin>LastLoginAt', targetType: 'any'} }"
+                                            class="sectionHint"
+                                        />
+                                    </HBox>
+
+                                    <HBox wrap="Wrap" class="adminActions">
+                                        <Button
+                                            text="{i18n>adminApprove}"
+                                            icon="sap-icon://accept"
+                                            type="Emphasized"
+                                            press=".onApprove"
+                                            visible="{= ${path: 'admin>Status', targetType: 'any'} === 'Pending' }"
+                                        />
+                                        <Button
+                                            text="{= ${path: 'admin>Status', targetType: 'any'} === 'Disabled' ? ${i18n>adminEnable} : ${i18n>adminDisable} }"
+                                            icon="{= ${path: 'admin>Status', targetType: 'any'} === 'Disabled' ? 'sap-icon://unlocked' : 'sap-icon://locked' }"
+                                            type="Transparent"
+                                            press=".onToggleStatus"
+                                            visible="{= ${path: 'admin>Status', targetType: 'any'} !== 'Pending' &amp;&amp; ${path: 'admin>Email', targetType: 'any'} !== ${adminView>/selfEmail} }"
+                                        />
+                                        <Button
+                                            text="{= ${path: 'admin>Role', targetType: 'any'} === 'Admin' ? ${i18n>adminDemote} : ${i18n>adminPromote} }"
+                                            icon="sap-icon://key-user-settings"
+                                            type="Transparent"
+                                            press=".onToggleRole"
+                                            visible="{= ${path: 'admin>Email', targetType: 'any'} !== ${adminView>/selfEmail} }"
+                                        />
+                                        <Button
+                                            text="{i18n>adminResetPassword}"
+                                            icon="sap-icon://reset"
+                                            type="Transparent"
+                                            press=".onOpenResetPassword"
+                                        />
+                                    </HBox>
                                 </VBox>
-                            </HBox>
-
-                            <HBox wrap="Wrap" alignItems="Center" class="adminBadges">
-                                <ObjectStatus
-                                    text="{= ${path: 'admin>Status', targetType: 'any'} === 'Pending' ? ${i18n>adminBadgePending} : (${path: 'admin>Status', targetType: 'any'} === 'Disabled' ? ${i18n>adminBadgeDisabled} : ${i18n>adminBadgeActive}) }"
-                                    state="{= ${path: 'admin>Status', targetType: 'any'} === 'Pending' ? 'Warning' : (${path: 'admin>Status', targetType: 'any'} === 'Disabled' ? 'Error' : 'Success') }"
-                                    inverted="true"
-                                />
-                                <ObjectStatus text="{i18n>adminRoleAdmin}" state="Information" inverted="true" visible="{= ${path: 'admin>Role', targetType: 'any'} === 'Admin' }" />
-                                <ObjectStatus text="{i18n>adminNoPassword}" state="None" inverted="true" visible="{= !${path: 'admin>HasPassword', targetType: 'any'} }" />
-                                <ObjectStatus text="{i18n>adminMustChange}" state="None" inverted="true" visible="{= ${path: 'admin>HasPassword', targetType: 'any'} &amp;&amp; ${path: 'admin>MustChangePassword', targetType: 'any'} }" />
-                                <Text
-                                    text="{ parts: [ 'i18n>adminLastLogin', { path: 'admin>LastLoginAt', formatter: 'formatter.formatDate' } ], formatter: 'formatter.formatTemplate' }"
-                                    visible="{= !!${path: 'admin>LastLoginAt', targetType: 'any'} }"
-                                    class="sectionHint"
-                                />
-                            </HBox>
-
-                            <HBox wrap="Wrap" class="adminActions">
-                                <Button
-                                    text="{i18n>adminApprove}"
-                                    icon="sap-icon://accept"
-                                    type="Emphasized"
-                                    press=".onApprove"
-                                    visible="{= ${path: 'admin>Status', targetType: 'any'} === 'Pending' }"
-                                />
-                                <Button
-                                    text="{= ${path: 'admin>Status', targetType: 'any'} === 'Disabled' ? ${i18n>adminEnable} : ${i18n>adminDisable} }"
-                                    icon="{= ${path: 'admin>Status', targetType: 'any'} === 'Disabled' ? 'sap-icon://unlocked' : 'sap-icon://locked' }"
-                                    type="Transparent"
-                                    press=".onToggleStatus"
-                                    visible="{= ${path: 'admin>Status', targetType: 'any'} !== 'Pending' &amp;&amp; ${path: 'admin>Email', targetType: 'any'} !== ${adminView>/selfEmail} }"
-                                />
-                                <Button
-                                    text="{= ${path: 'admin>Role', targetType: 'any'} === 'Admin' ? ${i18n>adminDemote} : ${i18n>adminPromote} }"
-                                    icon="sap-icon://key-user-settings"
-                                    type="Transparent"
-                                    press=".onToggleRole"
-                                    visible="{= ${path: 'admin>Email', targetType: 'any'} !== ${adminView>/selfEmail} }"
-                                />
-                                <Button
-                                    text="{i18n>adminResetPassword}"
-                                    icon="sap-icon://reset"
-                                    type="Transparent"
-                                    press=".onOpenResetPassword"
-                                />
-                            </HBox>
+                            </CustomListItem>
+                        </List>
                         </VBox>
-                    </CustomListItem>
-                </List>
+                    </IconTabFilter>
+                    <IconTabFilter key="email" icon="sap-icon://email" text="{i18n>adminTabEmail}">
+                        <VBox class="adminEmailPanel">
+                            <MessageStrip
+                                text="{= ${adminView>/email/Source} === 'SETTINGS' ? ${i18n>adminEmailSourceSettings} : (${adminView>/email/Source} === 'ENVIRONMENT' ? ${i18n>adminEmailSourceEnvironment} : ${i18n>adminEmailSourceNone}) }"
+                                type="{= ${adminView>/email/Source} === 'NONE' ? 'Warning' : 'Information' }"
+                                showIcon="true"
+                            />
+                            <MessageStrip
+                                text="{i18n>adminEmailPasswordUnreadable}"
+                                type="Error"
+                                showIcon="true"
+                                visible="{= ${adminView>/email/Saved} &amp;&amp; !${adminView>/email/PasswordReadable} }"
+                            />
+
+                            <VBox class="surfaceCard adminEmailForm">
+                                <Title text="{i18n>adminEmailServerTitle}" level="H3" />
+                                <Text text="{i18n>adminEmailServerHint}" class="sectionHint sapUiSmallMarginBottom" />
+                                <HBox wrap="Wrap" class="adminEmailFields">
+                                    <VBox class="adminEmailField adminEmailFieldWide">
+                                        <Label text="{i18n>adminEmailHost}" labelFor="emailHost" required="true" />
+                                        <Input id="emailHost" value="{adminView>/email/Host}" placeholder="smtp.gmail.com" maxLength="255" />
+                                    </VBox>
+                                    <VBox class="adminEmailField adminEmailFieldPort">
+                                        <Label text="{i18n>adminEmailPort}" labelFor="emailPort" required="true" />
+                                        <Input id="emailPort" value="{adminView>/email/Port}" type="Number" maxLength="5" />
+                                    </VBox>
+                                    <VBox class="adminEmailField adminEmailFieldWide">
+                                        <Label text="{i18n>adminEmailUsername}" labelFor="emailUsername" required="true" />
+                                        <Input id="emailUsername" value="{adminView>/email/Username}" maxLength="255" />
+                                    </VBox>
+                                    <VBox class="adminEmailField adminEmailFieldWide">
+                                        <Label text="{i18n>adminEmailPassword}" labelFor="emailPassword" required="{= !${adminView>/email/PasswordReadable} }" />
+                                        <Input
+                                            id="emailPassword"
+                                            value="{adminView>/email/Password}"
+                                            type="Password"
+                                            placeholder="{= ${adminView>/email/PasswordReadable} ? ${i18n>adminEmailPasswordKeep} : '' }"
+                                            maxLength="200"
+                                        />
+                                    </VBox>
+                                    <VBox class="adminEmailField adminEmailFieldWide">
+                                        <Label text="{i18n>adminEmailSender}" labelFor="emailSender" />
+                                        <Input id="emailSender" value="{adminView>/email/Sender}" type="Email" placeholder="{i18n>adminEmailSenderPlaceholder}" maxLength="255" />
+                                    </VBox>
+                                </HBox>
+                                <HBox wrap="Wrap" class="adminEmailActions">
+                                    <Button text="{i18n>adminEmailSave}" icon="sap-icon://save" type="Emphasized" press=".onSaveEmailServer" />
+                                    <Button
+                                        text="{i18n>adminEmailRemove}"
+                                        icon="sap-icon://delete"
+                                        type="Transparent"
+                                        press=".onRemoveEmailServer"
+                                        visible="{adminView>/email/Saved}"
+                                    />
+                                </HBox>
+                            </VBox>
+
+                            <VBox class="surfaceCard adminEmailForm">
+                                <Title text="{i18n>adminEmailTestTitle}" level="H3" />
+                                <Text text="{i18n>adminEmailTestHint}" class="sectionHint sapUiSmallMarginBottom" />
+                                <HBox wrap="Wrap" alignItems="End" class="adminEmailActions">
+                                    <VBox class="adminEmailField adminEmailFieldWide">
+                                        <Label text="{i18n>adminEmailTestRecipient}" labelFor="emailTestRecipient" />
+                                        <Input id="emailTestRecipient" value="{adminView>/email/testRecipient}" type="Email" maxLength="255" />
+                                    </VBox>
+                                    <Button
+                                        text="{i18n>adminEmailTestSend}"
+                                        icon="sap-icon://paper-plane"
+                                        press=".onSendTestEmail"
+                                        enabled="{= ${adminView>/email/Source} !== 'NONE' }"
+                                    />
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </IconTabFilter>
+                    </items>
+                </IconTabBar>
             </VBox>
         </content>
         <dependents>

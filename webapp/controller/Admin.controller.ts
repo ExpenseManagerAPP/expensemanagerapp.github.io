@@ -21,6 +21,18 @@ const GENERATED_PASSWORD_LENGTH = 12;
 const PASSWORD_CHARACTERS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+interface EmailServerForm {
+    Host: string;
+    Port: number | string;
+    Username: string;
+    Sender: string;
+    Password: string;
+    Saved: boolean;
+    PasswordReadable: boolean;
+    Source: "SETTINGS" | "ENVIRONMENT" | "NONE";
+    testRecipient: string;
+}
+
 interface AdminUser {
     ID: string;
     Email: string;
@@ -42,6 +54,42 @@ export default class Admin extends BaseController {
         this.viewModel = new JSONModel(this.initialState());
         this.getView()?.setModel(this.viewModel, "adminView");
         this.getRouter().getRoute("Admin")?.attachPatternMatched(() => this.showUsers());
+    }
+
+    public onAdminTabSelect(): void {
+        if (this.viewModel.getProperty("/tab") === "email") {
+            void this.loadEmailServer();
+        }
+    }
+
+    public async onSaveEmailServer(): Promise<void> {
+        const email = this.viewModel.getProperty("/email") as EmailServerForm;
+        const saved = await this.callAdmin("SaveEmailServer", {
+            Host: email.Host.trim(),
+            Port: Number(email.Port),
+            Username: email.Username.trim(),
+            Sender: email.Sender.trim(),
+            Password: email.Password
+        }, this.getText("adminEmailSaved"));
+
+        if (saved) {
+            await this.loadEmailServer();
+        }
+    }
+
+    public async onRemoveEmailServer(): Promise<void> {
+        if (!(await this.confirm(this.getText("adminEmailRemove"), this.getText("adminEmailRemoveConfirm")))) {
+            return;
+        }
+
+        if (await this.callAdmin("RemoveEmailServer", {}, this.getText("adminEmailRemoved"))) {
+            await this.loadEmailServer();
+        }
+    }
+
+    public async onSendTestEmail(): Promise<void> {
+        const recipient = (this.viewModel.getProperty("/email/testRecipient") as string).trim();
+        await this.callAdmin("SendTestEmail", { Recipient: recipient }, this.getText("adminEmailTestSent", [recipient]));
     }
 
     public onBack(): void {
@@ -162,6 +210,30 @@ export default class Admin extends BaseController {
         this.viewModel.setProperty("/selfEmail", AuthenticationService.getSession()?.userName ?? "");
         this.getView()?.setModel(model, "admin");
         this.usersBinding()?.refresh();
+
+        if (this.viewModel.getProperty("/tab") === "email") {
+            void this.loadEmailServer();
+        }
+    }
+
+    /**
+     * Reads the e-mail server settings (never the password) into the form.
+     */
+    private async loadEmailServer(): Promise<void> {
+        const model = this.getView()?.getModel("admin") as ODataModel | undefined;
+
+        if (!model) {
+            return;
+        }
+
+        try {
+            const binding = model.bindContext("/EmailServer()");
+            const info = await binding.requestObject() as Omit<EmailServerForm, "Password" | "testRecipient">;
+            const testRecipient = (this.viewModel.getProperty("/email/testRecipient") as string) || (AuthenticationService.getSession()?.userName ?? "");
+            this.viewModel.setProperty("/email", { ...info, Password: "", testRecipient });
+        } catch (error) {
+            MessageBox.error(getBackendErrorMessage(error) || this.getText("adminActionFailed"));
+        }
     }
 
     private applyFilters(): void {
@@ -187,14 +259,25 @@ export default class Admin extends BaseController {
     }
 
     /**
-     * Calls an AdminService action, then reloads the list. Errors (e.g. "you
-     * cannot change your own role") are shown as the backend message.
+     * Calls a user action of the AdminService, then reloads the list.
      */
     private async runAction(name: string, parameters: Record<string, string>, successText: string): Promise<void> {
+        if (await this.callAdmin(name, parameters, successText)) {
+            this.usersBinding()?.refresh();
+        }
+    }
+
+    /**
+     * Invokes an AdminService action. Errors (e.g. "you cannot change your own
+     * role", or the SMTP server's refusal) are shown as the backend message.
+     *
+     * @returns {Promise<boolean>} true when the action succeeded
+     */
+    private async callAdmin(name: string, parameters: Record<string, string | number>, successText: string): Promise<boolean> {
         const model = this.getView()?.getModel("admin") as ODataModel | undefined;
 
         if (!model) {
-            return;
+            return false;
         }
 
         this.viewModel.setProperty("/busy", true);
@@ -204,9 +287,10 @@ export default class Admin extends BaseController {
             Object.entries(parameters).forEach(([key, value]) => action.setParameter(key, value));
             await action.invoke();
             MessageToast.show(successText);
-            this.usersBinding()?.refresh();
+            return true;
         } catch (error) {
             MessageBox.error(getBackendErrorMessage(error) || this.getText("adminActionFailed"));
+            return false;
         } finally {
             this.viewModel.setProperty("/busy", false);
         }
@@ -240,6 +324,8 @@ export default class Admin extends BaseController {
 
     private initialState(): object {
         return {
+            tab: "users",
+            email: { Host: "", Port: 587, Username: "", Sender: "", Password: "", Saved: false, PasswordReadable: false, Source: "NONE", testRecipient: "" },
             status: "All",
             query: "",
             selfEmail: "",
