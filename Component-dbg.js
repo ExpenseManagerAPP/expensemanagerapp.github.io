@@ -68,8 +68,6 @@ sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "s
         // The service model is provisioned lazily by the route guard and the controllers.
       } else if (environment === EnvironmentType.LOCAL && AuthApi.getConfig().auth) {
         AuthApi.setLocalOverrides();
-      } else if (environment === EnvironmentType.BTP) {
-        this.prepareBtpServiceModel();
       } else {
         this.prepareStandaloneServiceModel();
       }
@@ -254,20 +252,6 @@ sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "s
           }
         }, TOKEN_RETRY_MS);
       }
-    },
-    /**
-     * Returns the app base path on the managed app router / launchpad
-     * (e.g. `/<dest-guid>.<app-name>.<artifact>-<version>`), used to prefix the
-     * OData service URL so the managed app router routes requests back to this
-     * app's xs-app.json. Returns an empty string when the app runs at the root.
-     */
-    getLaunchpadAppBasePath: function _getLaunchpadAppBasePath() {
-      const pathname = window.location.pathname;
-      return pathname.replace(/\/index\.html$/, "").replace(/\/+$/, "");
-    },
-    prepareBtpServiceModel: function _prepareBtpServiceModel() {
-      AuthApi.setServiceUrl(`${this.getLaunchpadAppBasePath()}/api/service/ExpenseManager/`);
-      this.setServiceModel("");
     },
     prepareStandaloneServiceModel: function _prepareStandaloneServiceModel() {
       if (!AuthApi.getConfig().odataService) {

@@ -1,4 +1,4 @@
-sap.ui.define(["../../util/Environment", "./BtpAuthenticationProvider", "./AppAuthenticationProvider", "./MockAuthenticationProvider", "../AuthApi"], function (__Environment, ___BtpAuthenticationProvider, ___AppAuthenticationProvider, ___MockAuthenticationProvider, ___AuthApi) {
+sap.ui.define(["../../util/Environment", "./AppAuthenticationProvider", "./MockAuthenticationProvider", "../AuthApi"], function (__Environment, ___AppAuthenticationProvider, ___MockAuthenticationProvider, ___AuthApi) {
   "use strict";
 
   function _interopRequireDefault(obj) {
@@ -6,15 +6,12 @@ sap.ui.define(["../../util/Environment", "./BtpAuthenticationProvider", "./AppAu
   }
   const Environment = _interopRequireDefault(__Environment);
   const EnvironmentType = __Environment["EnvironmentType"];
-  const BtpAuthenticationProvider = ___BtpAuthenticationProvider["BtpAuthenticationProvider"];
   const AppAuthenticationProvider = ___AppAuthenticationProvider["AppAuthenticationProvider"];
   const MockAuthenticationProvider = ___MockAuthenticationProvider["MockAuthenticationProvider"];
   const AuthApi = ___AuthApi["AuthApi"];
   class AuthenticatedProviderFactory {
     static create() {
       switch (Environment.current()) {
-        case EnvironmentType.BTP:
-          return new BtpAuthenticationProvider();
         case EnvironmentType.GITHUB:
           return new AppAuthenticationProvider();
         case EnvironmentType.LOCAL:

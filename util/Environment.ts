@@ -2,9 +2,7 @@ export enum EnvironmentType {
 
     LOCAL = "LOCAL",
 
-    GITHUB = "GITHUB",
-
-    BTP = "BTP"
+    GITHUB = "GITHUB"
 
 }
 
@@ -16,10 +14,6 @@ export default class Environment {
 
         if (host.includes("github.io")) {
             return EnvironmentType.GITHUB;
-        }
-
-        if (host.includes("cfapps")) {
-            return EnvironmentType.BTP;
         }
 
         return EnvironmentType.LOCAL;

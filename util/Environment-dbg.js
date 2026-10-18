@@ -4,7 +4,6 @@ sap.ui.define([], function () {
   var EnvironmentType = /*#__PURE__*/function (EnvironmentType) {
     EnvironmentType["LOCAL"] = "LOCAL";
     EnvironmentType["GITHUB"] = "GITHUB";
-    EnvironmentType["BTP"] = "BTP";
     return EnvironmentType;
   }(EnvironmentType || {});
   class Environment {
@@ -12,9 +11,6 @@ sap.ui.define([], function () {
       const host = window.location.hostname;
       if (host.includes("github.io")) {
         return EnvironmentType.GITHUB;
-      }
-      if (host.includes("cfapps")) {
-        return EnvironmentType.BTP;
       }
       return EnvironmentType.LOCAL;
     }

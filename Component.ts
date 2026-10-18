@@ -82,8 +82,6 @@ export default class Component extends BaseComponent {
             // The service model is provisioned lazily by the route guard and the controllers.
         } else if (environment === EnvironmentType.LOCAL && AuthApi.getConfig().auth) {
             AuthApi.setLocalOverrides();
-        } else if (environment === EnvironmentType.BTP) {
-            this.prepareBtpServiceModel();
         } else {
             this.prepareStandaloneServiceModel();
         }
@@ -304,22 +302,6 @@ export default class Component extends BaseComponent {
                 }
             }, TOKEN_RETRY_MS);
         }
-    }
-
-    /**
-     * Returns the app base path on the managed app router / launchpad
-     * (e.g. `/<dest-guid>.<app-name>.<artifact>-<version>`), used to prefix the
-     * OData service URL so the managed app router routes requests back to this
-     * app's xs-app.json. Returns an empty string when the app runs at the root.
-     */
-    private getLaunchpadAppBasePath(): string {
-        const pathname = window.location.pathname;
-        return pathname.replace(/\/index\.html$/, "").replace(/\/+$/, "");
-    }
-
-    private prepareBtpServiceModel(): void {
-        AuthApi.setServiceUrl(`${this.getLaunchpadAppBasePath()}/api/service/ExpenseManager/`);
-        this.setServiceModel("");
     }
 
     private prepareStandaloneServiceModel(): void {
