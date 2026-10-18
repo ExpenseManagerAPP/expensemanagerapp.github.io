@@ -537,3 +537,11 @@ html body .sectionTabs.sapMITB .sapMITBHead .sapMITBFilter:active .sapMITBFilter
     .adminToolbar > .sapMFlexItem:has(.adminStatusSelect) { display: block; }
     .adminToolbarActions > .sapMFlexItem:has(.sapMSF) { flex: 1 1 100% !important; }
 }
+.adminUsersPanel, .adminEmailPanel { gap: 1rem; padding-top: 1rem; }
+.adminEmailForm { gap: .35rem; }
+.adminEmailFields { gap: .75rem 1rem; }
+.adminEmailField { flex: 1 1 14rem; min-width: 0; }
+.adminEmailFieldWide { flex: 2 1 16rem; }
+.adminEmailFieldPort { flex: 0 1 7rem; }
+.adminEmailField .sapMInputBase { width: 100% !important; }
+.adminEmailActions { gap: .6rem; margin-top: .5rem; }

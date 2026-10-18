@@ -21,6 +21,38 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "sap/m/MessageBox", "sap/m/Message
       this.getView()?.setModel(this.viewModel, "adminView");
       this.getRouter().getRoute("Admin")?.attachPatternMatched(() => this.showUsers());
     }
+    onAdminTabSelect() {
+      if (this.viewModel.getProperty("/tab") === "email") {
+        void this.loadEmailServer();
+      }
+    }
+    async onSaveEmailServer() {
+      const email = this.viewModel.getProperty("/email");
+      const saved = await this.callAdmin("SaveEmailServer", {
+        Host: email.Host.trim(),
+        Port: Number(email.Port),
+        Username: email.Username.trim(),
+        Sender: email.Sender.trim(),
+        Password: email.Password
+      }, this.getText("adminEmailSaved"));
+      if (saved) {
+        await this.loadEmailServer();
+      }
+    }
+    async onRemoveEmailServer() {
+      if (!(await this.confirm(this.getText("adminEmailRemove"), this.getText("adminEmailRemoveConfirm")))) {
+        return;
+      }
+      if (await this.callAdmin("RemoveEmailServer", {}, this.getText("adminEmailRemoved"))) {
+        await this.loadEmailServer();
+      }
+    }
+    async onSendTestEmail() {
+      const recipient = this.viewModel.getProperty("/email/testRecipient").trim();
+      await this.callAdmin("SendTestEmail", {
+        Recipient: recipient
+      }, this.getText("adminEmailTestSent", [recipient]));
+    }
     onBack() {
       this.navTo("Home");
     }
@@ -135,6 +167,31 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "sap/m/MessageBox", "sap/m/Message
       this.viewModel.setProperty("/selfEmail", AuthenticationService.getSession()?.userName ?? "");
       this.getView()?.setModel(model, "admin");
       this.usersBinding()?.refresh();
+      if (this.viewModel.getProperty("/tab") === "email") {
+        void this.loadEmailServer();
+      }
+    }
+
+    /**
+     * Reads the e-mail server settings (never the password) into the form.
+     */
+    async loadEmailServer() {
+      const model = this.getView()?.getModel("admin");
+      if (!model) {
+        return;
+      }
+      try {
+        const binding = model.bindContext("/EmailServer()");
+        const info = await binding.requestObject();
+        const testRecipient = this.viewModel.getProperty("/email/testRecipient") || (AuthenticationService.getSession()?.userName ?? "");
+        this.viewModel.setProperty("/email", {
+          ...info,
+          Password: "",
+          testRecipient
+        });
+      } catch (error) {
+        MessageBox.error(getBackendErrorMessage(error) || this.getText("adminActionFailed"));
+      }
     }
     applyFilters() {
       const status = this.viewModel.getProperty("/status");
@@ -166,13 +223,24 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "sap/m/MessageBox", "sap/m/Message
     }
 
     /**
-     * Calls an AdminService action, then reloads the list. Errors (e.g. "you
-     * cannot change your own role") are shown as the backend message.
+     * Calls a user action of the AdminService, then reloads the list.
      */
     async runAction(name, parameters, successText) {
+      if (await this.callAdmin(name, parameters, successText)) {
+        this.usersBinding()?.refresh();
+      }
+    }
+
+    /**
+     * Invokes an AdminService action. Errors (e.g. "you cannot change your own
+     * role", or the SMTP server's refusal) are shown as the backend message.
+     *
+     * @returns {Promise<boolean>} true when the action succeeded
+     */
+    async callAdmin(name, parameters, successText) {
       const model = this.getView()?.getModel("admin");
       if (!model) {
-        return;
+        return false;
       }
       this.viewModel.setProperty("/busy", true);
       try {
@@ -180,9 +248,10 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "sap/m/MessageBox", "sap/m/Message
         Object.entries(parameters).forEach(([key, value]) => action.setParameter(key, value));
         await action.invoke();
         MessageToast.show(successText);
-        this.usersBinding()?.refresh();
+        return true;
       } catch (error) {
         MessageBox.error(getBackendErrorMessage(error) || this.getText("adminActionFailed"));
+        return false;
       } finally {
         this.viewModel.setProperty("/busy", false);
       }
@@ -213,6 +282,18 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "sap/m/MessageBox", "sap/m/Message
     }
     initialState() {
       return {
+        tab: "users",
+        email: {
+          Host: "",
+          Port: 587,
+          Username: "",
+          Sender: "",
+          Password: "",
+          Saved: false,
+          PasswordReadable: false,
+          Source: "NONE",
+          testRecipient: ""
+        },
         status: "All",
         query: "",
         selfEmail: "",
