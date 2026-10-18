@@ -9,6 +9,25 @@
 >
     <Page id="adminPage" showHeader="false" class="financePage adminPage">
         <content>
+            <HBox class="appHeader" visible="{device>/system/phone}">
+                <HBox
+                    class="appHeaderInner"
+                    alignItems="Center"
+                >
+                    <Image
+                        src="img/logo.svg"
+                        width="2.25rem"
+                        height="2.25rem"
+                        decorative="true"
+                        class="brandLogo sapUiSmallMarginEnd"
+                    />
+                    <Title
+                        text="{i18n>brandTitle}"
+                        level="H2"
+                        class="appHeaderTitle"
+                    />
+                </HBox>
+            </HBox>
             <VBox class="financeShell tabPage adminContent" busy="{adminView>/busy}" busyIndicatorDelay="0">
                 <HBox alignItems="Center" class="adminHeader">
                     <Button icon="sap-icon://nav-back" type="Transparent" tooltip="{i18n>adminBack}" press=".onBack" class="iconAction" />

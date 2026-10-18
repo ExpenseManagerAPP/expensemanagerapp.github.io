@@ -4,20 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#f4f7f8">
+    <!-- Sem (apple-)mobile-web-app-capable, apple-mobile-web-app-status-bar-style
+         e sem web manifest: com qualquer um deles o iOS usa o modo antigo de web
+         app (barra de status própria, branca/preta, ou as cores fixas do
+         manifest). Sem eles, como no Bendita Look, a barra herda desde a
+         primeira abertura a cor do body, que é a do header (cor da marca). -->
+    <meta name="theme-color" content="#0b5d52">
     <title>Expense Manager</title>
-    <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
     <link rel="alternate icon" href="img/favicon-32.png" type="image/png" sizes="32x32">
     <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
     <style>
         /* No PWA standalone a viewport física (100vh/100%) excede a área
            visível, cortando o rodapé dos dialogs e "dando zoom" ao abri-los.
-           Usamos as unidades de altura dinâmicas (dvh/lvh) para encaixar no
-           espaço realmente visível, com fallback para navegadores antigos. */
+           Usamos a unidade de altura dinâmica (dvh) para encaixar no espaço
+           realmente visível, com fallback para navegadores antigos. (100lvh
+           no standalone deixava o documento mais alto que a tela e ele todo
+           rolava por baixo da barra de status.) */
         html, body, body > div, #container, #container-uiarea {
             height: 100%;
         }
@@ -26,12 +29,51 @@
                 height: 100dvh;
             }
         }
-        @media all and (display-mode: standalone) {
-            @supports (height: 100lvh) {
-                html, body, body > div, #container, #container-uiarea {
-                    height: 100lvh;
-                }
-            }
+        /* Só o conteúdo das páginas rola; o documento fica parado. */
+        html, body {
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
+
+        /* Com viewport-fit=cover o app ocupa a tela física inteira, ficando
+           debaixo do notch/Dynamic Island e da barra de gestos (iPhone em tela
+           cheia). Reservamos as safe areas no body para o conteúdo começar
+           abaixo da câmera e terminar acima da barra. Fora do PWA o env() vale 0.
+           O iOS 26 pinta a barra de status com a cor de fundo do body (não usa
+           mais o theme-color), por isso o body tem a cor do header e só a faixa
+           de baixo recebe a cor do fundo da página (body::after). */
+        html, html body {
+            background: var(--header-bg, #0b5d52) !important;
+        }
+        html body {
+            box-sizing: border-box;
+            padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+                env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+        }
+        html body::after {
+            content: "";
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: env(safe-area-inset-bottom, 0px);
+            background: var(--surface, #f4f7f8);
+            pointer-events: none;
+        }
+        body > div, #container, #container-uiarea {
+            height: 100%;
+        }
+        /* Dialogs esticados (ex.: lista dos selects no celular) são fixos na
+           viewport e ignoram o padding do body, então recebem as mesmas
+           margens de segurança. */
+        html body .sapMDialog.sapMDialogStretched {
+            top: env(safe-area-inset-top, 0px) !important;
+            bottom: env(safe-area-inset-bottom, 0px) !important;
+            left: env(safe-area-inset-left, 0px) !important;
+            right: env(safe-area-inset-right, 0px) !important;
+            width: auto !important;
+            height: auto !important;
+            max-height: none !important;
         }
 
         /* Previne o auto-zoom do iOS/webview ao tocar em campos de texto. */
@@ -55,19 +97,20 @@
     ></script>
     <script>
         // Aplica o tema salvo antes do UI5 carregar, evitando "flash" do claro.
-        // O valor é gravado em JSON por sap/ui/util/Storage, por isso o JSON.parse.
+        // O valor é gravado em JSON por sap/ui/util/Storage (com o prefixo padrão
+        // "state.key_-" na chave), por isso a chave completa e o JSON.parse.
         (function () {
             try {
                 var stored = null;
                 try {
-                    stored = JSON.parse(sessionStorage.getItem("expensemanager-theme"));
+                    stored = JSON.parse(localStorage.getItem("state.key_-expensemanager-theme"));
                 } catch (e) {
                     stored = null;
                 }
                 if (stored === "dark") {
                     document.documentElement.setAttribute("data-theme", "dark");
                 }
-            } catch (e) { /* sessionStorage indisponível (ex.: modo privado) */ }
+            } catch (e) { /* localStorage indisponível (ex.: modo privado) */ }
         })();
     </script>
 </head>

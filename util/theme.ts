@@ -2,10 +2,12 @@ import Core from "sap/ui/core/Core";
 import Storage from "sap/ui/util/Storage";
 
 const THEME_KEY = "expensemanager-theme";
-const THEME_STORAGE = new Storage(Storage.Type.session);
+// localStorage: o tema sobrevive ao fechar o app, então ele já abre no tema
+// escolhido (e o iOS lê a cor da barra de status já no tema certo).
+const THEME_STORAGE = new Storage(Storage.Type.local);
 
 /**
- * Preferência de tema do app, persistida em sessionStorage via sap.ui.util.Storage.
+ * Preferência de tema do app, persistida em localStorage via sap.ui.util.Storage.
  * O Storage grava os valores em formato JSON (JSON.stringify), por isso a leitura
  * crua no pré-boot do index.html precisa usar JSON.parse para obter o valor.
  */
