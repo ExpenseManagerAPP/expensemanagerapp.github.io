@@ -25,6 +25,12 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "./BaseController", "../auth/Authe
         this.showBackendUnavailable();
       });
     }
+    onOpenSignup() {
+      this.navTo("Signup");
+    }
+    onOpenForgotPassword() {
+      this.navTo("ForgotPassword");
+    }
     onTogglePassword() {
       this.loginModel.setProperty("/showPassword", !this.loginModel.getProperty("/showPassword"));
     }

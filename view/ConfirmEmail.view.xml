@@ -1,0 +1,58 @@
+<mvc:View
+    controllerName="apps.dflc.expensemanager.controller.ConfirmEmail"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+>
+    <Page id="confirmEmailPage" showHeader="false" backgroundDesign="List" class="loginPage">
+        <content>
+            <FlexBox
+                class="loginAside changePasswordAside"
+                height="100%"
+                justifyContent="Center"
+                alignItems="Center"
+            >
+                <VBox
+                    class="loginCard"
+                    alignItems="Center"
+                    busy="{account>/busy}"
+                    busyIndicatorDelay="0"
+                >
+                    <HBox alignItems="Center" class="loginBrand sapUiMediumMarginBottom">
+                        <Image
+                            src="img/logo.svg"
+                            width="2.4rem"
+                            height="2.4rem"
+                            decorative="true"
+                            class="loginBrandLogo sapUiSmallMarginEnd"
+                        />
+                        <Title text="{i18n>brandTitle}" level="H2" titleStyle="H2" class="loginBrandTitle" />
+                    </HBox>
+
+                    <Title
+                        text="{i18n>confirmTitle}"
+                        level="H1"
+                        titleStyle="H3"
+                        wrapping="true"
+                        textAlign="Center"
+                        class="loginHeadline sapUiTinyMarginBottom"
+                    />
+                    <Text
+                        text="{i18n>confirmWorking}"
+                        textAlign="Center"
+                        class="loginSubtitle sapUiMediumMarginBottom"
+                    />
+
+                    <MessageStrip
+                        text="{account>/error}"
+                        type="Error"
+                        showIcon="true"
+                        visible="{= !!${account>/error} }"
+                        class="loginMessage"
+                    />
+
+                    <Link text="{i18n>forgotBackToLogin}" press=".onBackToLogin" class="loginLink sapUiSmallMarginTop" visible="{= !!${account>/error} }" />
+                </VBox>
+            </FlexBox>
+        </content>
+    </Page>
+</mvc:View>

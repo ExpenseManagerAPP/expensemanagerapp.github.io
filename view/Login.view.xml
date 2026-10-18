@@ -153,6 +153,9 @@
                                 submit=".onPasswordLogin"
                                 width="100%"
                             />
+                            <HBox justifyContent="End" class="loginForgotRow">
+                                <Link text="{i18n>loginForgotPassword}" press=".onOpenForgotPassword" class="loginLink" />
+                            </HBox>
                             <Button
                                 id="loginButton"
                                 text="{i18n>loginButton}"
@@ -163,6 +166,11 @@
                                 class="loginPrimary"
                             />
                         </VBox>
+
+                        <HBox alignItems="Center" justifyContent="Center" wrap="Wrap" class="loginSignupRow">
+                            <Text text="{i18n>loginNoAccount}" class="loginSignupHint" />
+                            <Link text="{i18n>loginCreateAccount}" press=".onOpenSignup" class="loginLink sapUiTinyMarginBegin" />
+                        </HBox>
 
                         <Text
                             text="{i18n>loginNote}"

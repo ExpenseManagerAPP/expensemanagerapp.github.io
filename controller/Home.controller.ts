@@ -38,14 +38,12 @@ import { runExclusiveAction } from "../util/draftDialogFlow";
 import type { UiPerson } from "../model/UiModel";
 import type Component from "../Component";
 import { PERSON_CHANNEL, PERSON_DRAFT_CLOSING, PERSON_SELECTED } from "../util/personEvents";
+import { OUTSIDE_WORKSPACE_ROUTES } from "../routing/routes";
 
 interface CardRow {
     ID: string;
     Name: string;
 }
-
-/** Routes shown outside the workspace shell (no person, no tabs). */
-const OUTSIDE_WORKSPACE_ROUTES = ["Login", "ChangePassword"];
 
 /**
  * Orchestrates the Home dashboard. Loading, selection and image/media state

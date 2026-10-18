@@ -2,6 +2,7 @@ import BaseComponent from "sap/ui/core/UIComponent";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import type AppRouter from "./routing/AppRouter";
+import { EMAIL_LINK_ROUTES, GUEST_ROUTES } from "./routing/routes";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import { createDeviceModel } from "./model/models";
@@ -201,7 +202,8 @@ export default class Component extends BaseComponent {
     /**
      * Picks the route to show instead of the requested one: the login page
      * without a session, the password change while it is pending, and the
-     * workspace when a signed-in user opens the login page.
+     * workspace when a signed-in user opens a guest page. E-mail links
+     * (confirmation, password reset) open in any case.
      *
      * @param {string} routeName the requested route
      * @returns {string | null} the route to show instead, or null to allow it
@@ -214,15 +216,19 @@ export default class Component extends BaseComponent {
         const authenticated = AuthenticationService.hasValidSession();
         const mustChangePassword = authenticated && AuthenticationService.mustChangePassword();
 
+        if (EMAIL_LINK_ROUTES.includes(routeName)) {
+            return null;
+        }
+
         if (!authenticated) {
-            return routeName === "Login" || AuthenticationService.isAuthErrorPending() ? null : "Login";
+            return GUEST_ROUTES.includes(routeName) || AuthenticationService.isAuthErrorPending() ? null : "Login";
         }
 
         if (mustChangePassword) {
             return routeName === "ChangePassword" ? null : "ChangePassword";
         }
 
-        return routeName === "Login" || routeName === "ChangePassword" ? "Home" : null;
+        return GUEST_ROUTES.includes(routeName) || routeName === "ChangePassword" ? "Home" : null;
     }
 
     /**

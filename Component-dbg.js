@@ -1,9 +1,11 @@
-sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "sap/m/MessageBox", "./model/models", "./model/UiModel", "./auth/AuthenticationService", "./auth/providers/AuthenticatedProviderFactory", "./auth/AuthApi", "./auth/storage/SessionStorage", "./util/Environment", "./util/http", "./util/feedback", "./util/theme", "./util/personEvents"], function (BaseComponent, ODataModel, MessageBox, ___model_models, __UiModel, ___auth_AuthenticationService, ___auth_providers_AuthenticatedProviderFactory, ___auth_AuthApi, ___auth_storage_SessionStorage, __Environment, ___util_http, ___util_feedback, ___util_theme, ___util_personEvents) {
+sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "sap/m/MessageBox", "./routing/routes", "./model/models", "./model/UiModel", "./auth/AuthenticationService", "./auth/providers/AuthenticatedProviderFactory", "./auth/AuthApi", "./auth/storage/SessionStorage", "./util/Environment", "./util/http", "./util/feedback", "./util/theme", "./util/personEvents"], function (BaseComponent, ODataModel, MessageBox, ___routing_routes, ___model_models, __UiModel, ___auth_AuthenticationService, ___auth_providers_AuthenticatedProviderFactory, ___auth_AuthApi, ___auth_storage_SessionStorage, __Environment, ___util_http, ___util_feedback, ___util_theme, ___util_personEvents) {
   "use strict";
 
   function _interopRequireDefault(obj) {
     return obj && obj.__esModule && typeof obj.default !== "undefined" ? obj.default : obj;
   }
+  const EMAIL_LINK_ROUTES = ___routing_routes["EMAIL_LINK_ROUTES"];
+  const GUEST_ROUTES = ___routing_routes["GUEST_ROUTES"];
   const createDeviceModel = ___model_models["createDeviceModel"];
   const UiModel = _interopRequireDefault(__UiModel);
   const AuthenticationService = ___auth_AuthenticationService["AuthenticationService"];
@@ -167,7 +169,8 @@ sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "s
     /**
      * Picks the route to show instead of the requested one: the login page
      * without a session, the password change while it is pending, and the
-     * workspace when a signed-in user opens the login page.
+     * workspace when a signed-in user opens a guest page. E-mail links
+     * (confirmation, password reset) open in any case.
      *
      * @param {string} routeName the requested route
      * @returns {string | null} the route to show instead, or null to allow it
@@ -178,13 +181,16 @@ sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/model/odata/v4/ODataModel", "s
       }
       const authenticated = AuthenticationService.hasValidSession();
       const mustChangePassword = authenticated && AuthenticationService.mustChangePassword();
+      if (EMAIL_LINK_ROUTES.includes(routeName)) {
+        return null;
+      }
       if (!authenticated) {
-        return routeName === "Login" || AuthenticationService.isAuthErrorPending() ? null : "Login";
+        return GUEST_ROUTES.includes(routeName) || AuthenticationService.isAuthErrorPending() ? null : "Login";
       }
       if (mustChangePassword) {
         return routeName === "ChangePassword" ? null : "ChangePassword";
       }
-      return routeName === "Login" || routeName === "ChangePassword" ? "Home" : null;
+      return GUEST_ROUTES.includes(routeName) || routeName === "ChangePassword" ? "Home" : null;
     },
     /**
      * Drops the service model and the UI state on sign-out, so the next user

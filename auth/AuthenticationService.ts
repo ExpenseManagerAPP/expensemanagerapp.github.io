@@ -1,6 +1,8 @@
 import { IAuthenticationProvider } from "./IAuthenticationProvider";
 import { UserSession } from "./models/UserSession";
 import { SessionStorage } from "./storage/SessionStorage";
+import { AuthApi, type SignUpStatus } from "./AuthApi";
+import Localization from "sap/base/i18n/Localization";
 
 /** How long before the access token expires the session is renewed. */
 const REFRESH_AHEAD_MS = 2 * 60 * 1000;
@@ -43,6 +45,32 @@ export class AuthenticationService {
         }
 
         this.storeSession(await this.provider.changePassword(session, currentPassword, newPassword));
+
+    }
+
+    public static signUp(email: string, name: string, password: string): Promise<SignUpStatus> {
+
+        return AuthApi.signUp(email, name, password, Localization.getLanguage());
+
+    }
+
+    /** Activates the account of an e-mail link and opens its session. */
+    public static async confirmAccount(token: string): Promise<void> {
+
+        this.storeSession(await AuthApi.confirmAccount(token));
+
+    }
+
+    public static requestPasswordReset(email: string): Promise<void> {
+
+        return AuthApi.requestPasswordReset(email, Localization.getLanguage());
+
+    }
+
+    /** Sets the password of an e-mail link and opens the new session. */
+    public static async resetPassword(token: string, newPassword: string): Promise<void> {
+
+        this.storeSession(await AuthApi.resetPassword(token, newPassword));
 
     }
 

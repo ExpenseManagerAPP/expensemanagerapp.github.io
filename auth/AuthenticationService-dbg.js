@@ -1,7 +1,8 @@
-sap.ui.define(["./storage/SessionStorage"], function (___storage_SessionStorage) {
+sap.ui.define(["./storage/SessionStorage", "./AuthApi", "sap/base/i18n/Localization"], function (___storage_SessionStorage, ___AuthApi, Localization) {
   "use strict";
 
   const SessionStorage = ___storage_SessionStorage["SessionStorage"];
+  const AuthApi = ___AuthApi["AuthApi"];
   /** How long before the access token expires the session is renewed. */
   const REFRESH_AHEAD_MS = 2 * 60 * 1000;
   const MIN_REFRESH_DELAY_MS = 5 * 1000;
@@ -24,6 +25,22 @@ sap.ui.define(["./storage/SessionStorage"], function (___storage_SessionStorage)
         throw new Error("No active session");
       }
       this.storeSession(await this.provider.changePassword(session, currentPassword, newPassword));
+    }
+    static signUp(email, name, password) {
+      return AuthApi.signUp(email, name, password, Localization.getLanguage());
+    }
+
+    /** Activates the account of an e-mail link and opens its session. */
+    static async confirmAccount(token) {
+      this.storeSession(await AuthApi.confirmAccount(token));
+    }
+    static requestPasswordReset(email) {
+      return AuthApi.requestPasswordReset(email, Localization.getLanguage());
+    }
+
+    /** Sets the password of an e-mail link and opens the new session. */
+    static async resetPassword(token, newPassword) {
+      this.storeSession(await AuthApi.resetPassword(token, newPassword));
     }
     static async logout() {
       this.cancelRefresh();

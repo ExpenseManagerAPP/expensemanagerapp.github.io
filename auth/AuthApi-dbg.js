@@ -1,6 +1,8 @@
 sap.ui.define([], function () {
   "use strict";
 
+  /** "confirmation_sent": a link went to the e-mail; "pending_approval": an admin must approve. */
+
   /**
    * Failure returned by the CAP /auth endpoints, keeping the error code
    * (e.g. invalid_credentials, too_many_attempts) so the UI can show a precise message.
@@ -55,22 +57,54 @@ sap.ui.define([], function () {
         auth: payload.auth
       };
     }
-    static async loginWithPassword(username, password) {
-      return this.createSession(await this.post("/password", {
+    static loginWithPassword(username, password) {
+      return this.postForSession("/password", {
         username,
         password
-      }));
+      });
     }
-    static async refresh(refreshToken) {
-      return this.createSession(await this.post("/refresh", {
+    static refresh(refreshToken) {
+      return this.postForSession("/refresh", {
         refresh_token: refreshToken
-      }));
+      });
     }
-    static async changePassword(accessToken, currentPassword, newPassword) {
-      return this.createSession(await this.post("/change-password", {
+    static changePassword(accessToken, currentPassword, newPassword) {
+      return this.postForSession("/change-password", {
         current_password: currentPassword,
         new_password: newPassword
-      }, accessToken));
+      }, accessToken);
+    }
+    static async signUp(email, name, password, lang) {
+      return (await this.post("/signup", {
+        email,
+        name,
+        password,
+        lang
+      })).status;
+    }
+    static confirmAccount(token) {
+      return this.postForSession("/confirm", {
+        token
+      });
+    }
+    static async requestPasswordReset(email, lang) {
+      await this.post("/forgot-password", {
+        email,
+        lang
+      });
+    }
+    static resetPassword(token, newPassword) {
+      return this.postForSession("/reset-password", {
+        token,
+        new_password: newPassword
+      });
+    }
+    static async postForSession(path, body, accessToken) {
+      const payload = await this.post(path, body, accessToken);
+      if (!payload.access_token) {
+        throw new AuthRequestError("login_failed", "Login failed", 0);
+      }
+      return this.createSession(payload);
     }
     static async post(path, body, accessToken) {
       const baseUrl = this.getConfig().auth?.baseUrl;
@@ -93,7 +127,7 @@ sap.ui.define([], function () {
         throw new AuthRequestError("backend_unavailable", "Authentication service is unreachable", 0);
       }
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok || payload.error || !payload.access_token) {
+      if (!response.ok || payload.error) {
         throw new AuthRequestError(payload.error ?? "login_failed", payload.error_description ?? "Login failed", response.status);
       }
       return payload;

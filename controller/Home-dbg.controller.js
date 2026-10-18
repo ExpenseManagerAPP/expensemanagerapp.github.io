@@ -1,4 +1,4 @@
-sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox", "./BaseController", "../auth/AuthenticationService", "../service/ODataService", "sap/ui/core/format/DateFormat", "sap/base/strings/formatMessage", "sap/m/library", "sap/ui/core/library", "../util/choiceDialog", "../service/PeriodService", "../service/MediaService", "../util/http", "../util/theme", "../util/feedback", "../util/personEvents"], function (MessageToast, Fragment, MessageBox, ___BaseController, ___auth_AuthenticationService, ___service_ODataService, DateFormat, formatMessage, sap_m_library, sap_ui_core_library, ___util_choiceDialog, ___service_PeriodService, ___service_MediaService, ___util_http, ___util_theme, ___util_feedback, ___util_personEvents) {
+sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox", "./BaseController", "../auth/AuthenticationService", "../service/ODataService", "sap/ui/core/format/DateFormat", "sap/base/strings/formatMessage", "sap/m/library", "sap/ui/core/library", "../util/choiceDialog", "../service/PeriodService", "../service/MediaService", "../util/http", "../util/theme", "../util/feedback", "../util/personEvents", "../routing/routes"], function (MessageToast, Fragment, MessageBox, ___BaseController, ___auth_AuthenticationService, ___service_ODataService, DateFormat, formatMessage, sap_m_library, sap_ui_core_library, ___util_choiceDialog, ___service_PeriodService, ___service_MediaService, ___util_http, ___util_theme, ___util_feedback, ___util_personEvents, ___routing_routes) {
   "use strict";
 
   const BaseController = ___BaseController["BaseController"];
@@ -22,9 +22,7 @@ sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox",
   const PERSON_CHANNEL = ___util_personEvents["PERSON_CHANNEL"];
   const PERSON_DRAFT_CLOSING = ___util_personEvents["PERSON_DRAFT_CLOSING"];
   const PERSON_SELECTED = ___util_personEvents["PERSON_SELECTED"];
-  /** Routes shown outside the workspace shell (no person, no tabs). */
-  const OUTSIDE_WORKSPACE_ROUTES = ["Login", "ChangePassword"];
-
+  const OUTSIDE_WORKSPACE_ROUTES = ___routing_routes["OUTSIDE_WORKSPACE_ROUTES"];
   /**
    * Orchestrates the Home dashboard. Loading, selection and image/media state
    * is delegated to focused services (PeriodService, MediaService,
