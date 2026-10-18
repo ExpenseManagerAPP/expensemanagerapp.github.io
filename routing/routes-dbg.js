@@ -8,7 +8,7 @@ sap.ui.define([], function () {
   const EMAIL_LINK_ROUTES = ["ConfirmEmail", "ResetPassword"];
 
   /** Routes shown outside the workspace shell (no person, no tabs). */
-  const OUTSIDE_WORKSPACE_ROUTES = [...GUEST_ROUTES, ...EMAIL_LINK_ROUTES, "ChangePassword"];
+  const OUTSIDE_WORKSPACE_ROUTES = [...GUEST_ROUTES, ...EMAIL_LINK_ROUTES, "ChangePassword", "Admin"];
   var __exports = {
     __esModule: true
   };

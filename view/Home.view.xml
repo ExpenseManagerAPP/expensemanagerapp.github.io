@@ -137,6 +137,14 @@
                                     visible="{= !${ui>/personsEmpty} }"
                                 />
                                 <Button
+                                    icon="sap-icon://key-user-settings"
+                                    type="Transparent"
+                                    tooltip="{i18n>adminTooltip}"
+                                    press=".onOpenAdmin"
+                                    class="iconAction"
+                                    visible="{ui>/isAdmin}"
+                                />
+                                <Button
                                     icon="sap-icon://log"
                                     type="Transparent"
                                     tooltip="{i18n>logoutTooltip}"

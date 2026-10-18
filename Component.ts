@@ -228,6 +228,10 @@ export default class Component extends BaseComponent {
             return routeName === "ChangePassword" ? null : "ChangePassword";
         }
 
+        if (routeName === "Admin" && !AuthenticationService.isAdmin()) {
+            return "Home";
+        }
+
         return GUEST_ROUTES.includes(routeName) || routeName === "ChangePassword" ? "Home" : null;
     }
 
@@ -243,7 +247,44 @@ export default class Component extends BaseComponent {
         this._modelToken = "";
         this.setModel(null as unknown as ODataModel);
         model?.destroy();
+        this.dropAdminModel();
         (this.getModel("ui") as UiModel).reset();
+    }
+
+    /**
+     * OData model of the admin service (/service/Admin/), created when an
+     * admin first opens the administration page.
+     *
+     * @returns {ODataModel | null} the model, or null for non-admins
+     */
+    public getAdminModel(): ODataModel | null {
+        const session = AuthenticationService.getSession();
+
+        if (!session?.accessToken || !AuthenticationService.isAdmin()) {
+            return null;
+        }
+
+        let model = this.getModel("admin") as ODataModel | undefined;
+
+        if (!model) {
+            model = new ODataModel({
+                serviceUrl: AuthApi.getConfig().odataService.replace(/ExpenseManager\/?$/, "Admin/"),
+                httpHeaders: { Authorization: `Bearer ${session.accessToken}` },
+                operationMode: "Server",
+                autoExpandSelect: true
+            });
+            model.attachSessionTimeout(() => AuthenticationService.notifySessionExpired());
+            this.setModel(model, "admin");
+        }
+
+        return model;
+    }
+
+    private dropAdminModel(): void {
+        const model = this.getModel("admin") as ODataModel | undefined;
+
+        this.setModel(null as unknown as ODataModel, "admin");
+        model?.destroy();
     }
 
     private isAuthRequired(): boolean {
@@ -292,6 +333,8 @@ export default class Component extends BaseComponent {
      * @param {string} accessToken the renewed access token
      */
     private applyAccessToken(accessToken: string): void {
+        (this.getModel("admin") as ODataModel | undefined)?.changeHttpHeaders({ Authorization: `Bearer ${accessToken}` });
+
         const model = this.getModel() as ODataModel | undefined;
 
         if (!model || !this._modelToken) {

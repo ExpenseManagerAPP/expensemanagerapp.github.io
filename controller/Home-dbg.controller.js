@@ -96,6 +96,9 @@ sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox",
         text: this.getText("sharesActionDelete")
       }]);
     }
+    onOpenAdmin() {
+      this.navTo("Admin");
+    }
     onTabSelect(event) {
       this.navTo(event.getParameter("key") ?? "Home");
     }
@@ -134,6 +137,7 @@ sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox",
       return this._initializing;
     }
     async loadWorkspace() {
+      this.getUiModel().setProperty("/isAdmin", AuthenticationService.isAdmin());
       try {
         const model = await this.ensureServiceModel();
         if (!model) {

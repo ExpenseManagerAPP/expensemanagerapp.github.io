@@ -103,6 +103,10 @@ export default class Home extends BaseController {
         ]);
     }
 
+    public onOpenAdmin(): void {
+        this.navTo("Admin");
+    }
+
     public onTabSelect(event: IconTabBar$SelectEvent): void {
         this.navTo(event.getParameter("key") ?? "Home");
     }
@@ -146,6 +150,8 @@ export default class Home extends BaseController {
     }
 
     private async loadWorkspace(): Promise<void> {
+        this.getUiModel().setProperty("/isAdmin", AuthenticationService.isAdmin());
+
         try {
             const model = await this.ensureServiceModel();
 

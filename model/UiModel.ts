@@ -150,6 +150,9 @@ export interface IUiState {
 
     categories: unknown[];
 
+    /** The signed-in user is an administrator (shows the administration entry). */
+    isAdmin: boolean;
+
     /** SVG markup of the overview charts (category donut, monthly history). */
     charts: { categories: string; history: string };
 
@@ -320,6 +323,8 @@ export default class UiModel extends JSONModel {
             transactions: [],
 
             categories: [],
+
+            isAdmin: false,
 
             charts: { categories: "", history: "" },
 

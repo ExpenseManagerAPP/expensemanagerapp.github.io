@@ -5,4 +5,4 @@ export const GUEST_ROUTES = ["Login", "Signup", "ForgotPassword"];
 export const EMAIL_LINK_ROUTES = ["ConfirmEmail", "ResetPassword"];
 
 /** Routes shown outside the workspace shell (no person, no tabs). */
-export const OUTSIDE_WORKSPACE_ROUTES = [...GUEST_ROUTES, ...EMAIL_LINK_ROUTES, "ChangePassword"];
+export const OUTSIDE_WORKSPACE_ROUTES = [...GUEST_ROUTES, ...EMAIL_LINK_ROUTES, "ChangePassword", "Admin"];

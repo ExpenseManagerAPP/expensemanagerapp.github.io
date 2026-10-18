@@ -185,6 +185,11 @@
 					"target": "ChangePassword"
 				},
 				{
+					"name": "Admin",
+					"pattern": "admin",
+					"target": "Admin"
+				},
+				{
 					"name": "Signup",
 					"pattern": "signup",
 					"target": "Signup"
@@ -213,6 +218,10 @@
 				"ChangePassword": {
 					"id": "ChangePassword",
 					"name": "ChangePassword"
+				},
+				"Admin": {
+					"id": "Admin",
+					"name": "Admin"
 				},
 				"Signup": {
 					"id": "Signup",

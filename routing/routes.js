@@ -1,2 +1,2 @@
-sap.ui.define([],function(){"use strict";const s=["Login","Signup","ForgotPassword"];const o=["ConfirmEmail","ResetPassword"];const n=[...s,...o,"ChangePassword"];var e={__esModule:true};e.GUEST_ROUTES=s;e.EMAIL_LINK_ROUTES=o;e.OUTSIDE_WORKSPACE_ROUTES=n;return e});
+sap.ui.define([],function(){"use strict";const s=["Login","Signup","ForgotPassword"];const n=["ConfirmEmail","ResetPassword"];const o=[...s,...n,"ChangePassword","Admin"];var e={__esModule:true};e.GUEST_ROUTES=s;e.EMAIL_LINK_ROUTES=n;e.OUTSIDE_WORKSPACE_ROUTES=o;return e});
 //# sourceMappingURL=routes.js.map

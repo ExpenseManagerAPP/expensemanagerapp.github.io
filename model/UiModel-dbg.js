@@ -79,6 +79,7 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "../util/liabilityRules"], functio
         },
         transactions: [],
         categories: [],
+        isAdmin: false,
         charts: {
           categories: "",
           history: ""
