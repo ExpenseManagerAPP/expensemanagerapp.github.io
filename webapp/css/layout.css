@@ -2,12 +2,38 @@
 
 .financeShell { max-width: 76rem; margin: 0 auto; padding: 1.5rem 2rem 3rem; gap: 1.25rem; }
 .overviewTab { gap: 1.25rem; }
-.topBar { min-height: 3.5rem; }
+.topBar { min-height: 2.5rem; gap: .5rem; }
+
+/* Header fixo da Home: gruda no topo da área de rolagem da página. A cor
+   (--header-bg) é a mesma do body/theme-color, então no PWA ele continua
+   pela barra de status como num app nativo. */
+/* .sapMFlexBox: vence o sapMFlexBoxBGTransparent do HBox (fundo transparente). */
+.appHeader.sapMFlexBox {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--header-bg);
+    border-bottom: 1px solid rgba(0, 0, 0, .12);
+    box-shadow: 0 6px 18px rgba(19, 48, 48, .12);
+}
+.appHeaderInner { width: 100%; max-width: 76rem; margin: 0 auto; padding: .6rem 2rem; gap: .75rem; box-sizing: border-box; }
+.appHeaderActions { gap: .35rem; min-width: 0; }
+.appHeader .brandLogo { box-shadow: 0 0 0 2px rgba(255, 255, 255, .25); }
+.appHeader .appHeaderTitle { color: var(--white); font-weight: 700; }
+.appHeader .iconAction .sapMBtnInner .sapUiIcon,
+.appHeader .iconAction .sapMBtnInner .sapMBtnIcon { color: var(--white) !important; }
+.appHeader .iconAction .sapMBtnInner:hover,
+.appHeader .iconAction.sapMBtnActive .sapMBtnInner { background: rgba(255, 255, 255, .16) !important; border-color: transparent !important; }
+.personPicker.sapMFlexBox {
+    gap: .4rem; min-width: 0; padding: .2rem .25rem .2rem .3rem;
+    border-radius: 999px; background: var(--white); border: 1px solid var(--line-soft);
+    box-shadow: 0 2px 8px rgba(19, 48, 48, .05);
+}
+.personPicker .personSelect { width: 13rem !important; max-width: 100%; }
+.personPicker .personSelect .sapMSltInner,
+.personPicker .personSelect.sapMSlt { border: 0; background: transparent; box-shadow: none; }
 .brandGroup { gap: .75rem; }
 .brandLogo { border-radius: .75rem; box-shadow: 0 4px 14px rgba(7, 61, 58, .18); }
 .brandTitle { color: var(--ink); font-weight: 700; }
 .topActions, .heroActions { gap: .5rem; align-items: center; }
-.personLabel { color: var(--muted); font-size: .8rem; }
 .personAvatar .sapFAvatar { background: var(--teal-050) !important; color: var(--teal-700); border: 1px solid #d8f7ed; }
 .personSelect { background: var(--white); border-radius: .7rem; }
 .personSelect .sapMSltInner { border-radius: .7rem; border-color: var(--line-soft); background: var(--white); color: var(--ink); }
