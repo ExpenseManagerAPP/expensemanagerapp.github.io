@@ -39,6 +39,10 @@ O `custom-proxy` remove o prefixo `/api` das rotas OData e repassa `/auth` como 
 
 `#/signup` e `#/forgot-password` são só para quem não está logado; os links de email abrem com ou sem sessão. As listas ficam em `webapp/routing/routes.ts`, usadas pelo guard do `Component` e pela Home.
 
+## Administração
+
+Admins (papel `Admin` na sessão) veem o botão de administração no cabeçalho, que abre `#/admin`. O guard manda quem não é admin de volta para o início. A página usa um modelo OData próprio (`admin`, criado pelo `Component.getAdminModel()` para `/service/Admin/`), com o token renovado junto com o modelo principal e descartado no logout. Os detalhes das ações e regras estão em [users-and-admins.md](https://github.com/ExpenseManagerAPP/expensemanagerapp/blob/main/docs/users-and-admins.md).
+
 ## Arquivos
 
 | Arquivo | Papel |
@@ -49,6 +53,7 @@ O `custom-proxy` remove o prefixo `/api` das rotas OData e repassa `/auth` como 
 | `webapp/auth/providers/MockAuthenticationProvider.ts` | Provider do modo mock |
 | `webapp/routing/AppRouter.ts` | Router com guard |
 | `webapp/controller/Login.controller.ts` / `ChangePassword.controller.ts` | Telas de login e troca de senha |
+| `webapp/controller/Admin.controller.ts` | Página de administração de usuários |
 | `webapp/controller/AccountPage.ts` | Base das telas de conta (formulário, validação, erros) |
 | `webapp/controller/Signup`, `ForgotPassword`, `ResetPassword`, `ConfirmEmail` | Telas de criar conta, esqueci a senha, nova senha e confirmação |
 | `webapp/util/http.ts` | `fetch` autenticado (CSRF, 401 → sessão expirada) |
