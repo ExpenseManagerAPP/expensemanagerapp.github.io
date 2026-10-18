@@ -6,6 +6,7 @@ import { EMAIL_LINK_ROUTES, GUEST_ROUTES } from "./routing/routes";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import { createDeviceModel } from "./model/models";
+import { createPwaModel } from "./util/pwa";
 import UiModel from "./model/UiModel";
 import { AuthenticationService } from "./auth/AuthenticationService";
 import { AuthenticatedProviderFactory } from "./auth/providers/AuthenticatedProviderFactory";
@@ -75,6 +76,7 @@ export default class Component extends BaseComponent {
         AuthenticationService.onAuthError((message) => this.handleAuthError(message));
 
         this.setModel(createDeviceModel(), "device");
+        this.setModel(createPwaModel(), "pwa");
         this.setModel(new UiModel(), "ui");
 
         const environment = Environment.current();
