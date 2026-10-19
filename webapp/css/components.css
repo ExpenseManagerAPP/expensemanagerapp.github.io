@@ -28,3 +28,19 @@
 }
 
 .emptyStateButton .sapMBtnInner { border-radius: .8rem; background: var(--teal-800); border-color: var(--teal-800); margin-top: .35rem; }
+
+/* SegmentedButton nas cores da marca (o tema pinta texto, borda e selecionado de azul) */
+html body .sapMSegB .sapMSegBBtn .sapMSegBBtnInner {
+    color: var(--teal-800) !important;
+    border-color: var(--line-soft) !important;
+}
+html body .sapMSegB .sapMSegBBtn:hover .sapMSegBBtnInner {
+    background: var(--teal-050) !important;
+}
+html body .sapMSegB .sapMSegBBtn.sapMSegBBtnSel .sapMSegBBtnInner {
+    background: #d9f2e8 !important;
+    border-color: var(--teal-700) !important;
+    color: var(--teal-900) !important;
+    font-weight: 700;
+}
+

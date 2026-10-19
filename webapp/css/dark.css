@@ -275,3 +275,19 @@ html[data-theme="dark"] body .sectionTabs.sapMITB .sapMITBHead .sapMITBFilter:ac
 [data-theme="dark"] .txTileFooter { border-top-color: #2b4a45; }
 [data-theme="dark"] .txChip { background: rgba(20, 165, 130, .14); }
 [data-theme="dark"] .txChip .sapMText, [data-theme="dark"] .txChip .sapUiIcon { color: #7fdcc0 !important; }
+
+/* SegmentedButton no tema escuro */
+html[data-theme="dark"] body .sapMSegB .sapMSegBBtn .sapMSegBBtnInner {
+    color: #bfe8d8 !important;
+    border-color: #2b4a45 !important;
+    background: transparent !important;
+}
+html[data-theme="dark"] body .sapMSegB .sapMSegBBtn:hover .sapMSegBBtnInner {
+    background: rgba(20, 165, 130, .1) !important;
+}
+html[data-theme="dark"] body .sapMSegB .sapMSegBBtn.sapMSegBBtnSel .sapMSegBBtnInner {
+    background: rgba(20, 165, 130, .18) !important;
+    border-color: var(--teal-600) !important;
+    color: #7fdcc0 !important;
+}
+
