@@ -43,7 +43,7 @@ sap.ui.define(["../auth/AuthApi"], function (___auth_AuthApi) {
     }
     const text = value.trim().replace(/\s/g, "");
     if (text.includes(",")) {
-      const normalized = text.replace(/\./g, "").replace(",", "");
+      const normalized = text.replace(",", "");
       return toFinite(normalized);
     }
     if (/^\d{1,3}(\.\d{3})+$/.test(text)) {
