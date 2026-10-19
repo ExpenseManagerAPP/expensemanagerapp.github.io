@@ -85,6 +85,19 @@ sap.ui.define(["../service/ODataService", "sap/ui/core/mvc/Controller", "sap/ui/
      * @param {string} messageKey the i18n key shown in the MessageBox
      * @param {string[]} [parameters] optional parameters for the i18n text
      */
+    /**
+     * Error of a user action: the text of the action plus, when the backend
+     * explained it (e.g. "you do not have permission"), the backend reason.
+     *
+     * @param {string} messageKey text of the action that failed
+     * @param {unknown} error the caught error
+     */
+    showActionError(messageKey, error) {
+      const detail = getBackendErrorMessage(error);
+      MessageBox.error(detail ? `${this.getText(messageKey)}
+
+${detail}` : this.getText(messageKey));
+    }
     showErrorMessage(messageKey, parameters) {
       MessageBox.error(this.getText(messageKey, parameters));
     }
@@ -121,7 +134,7 @@ sap.ui.define(["../service/ODataService", "sap/ui/core/mvc/Controller", "sap/ui/
         this.showWarningMessage("personLockedByOther", [error.user]);
         return true;
       }
-      this.showErrorMessage(messageKey);
+      this.showActionError(messageKey, error);
       return true;
     }
     handleLoadError(error, backendKey) {

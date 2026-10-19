@@ -306,7 +306,7 @@ sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox",
       } catch (error) {
         this.announcePersonSelected();
         if (!isSessionExpiredError(error) && !isBackendUnavailableError(error)) {
-          this.showErrorMessage("errorDiscardPersonDraft");
+          this.showActionError("errorDiscardPersonDraft", error);
         }
         return false;
       } finally {
@@ -436,7 +436,7 @@ sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox",
         this.reload();
       } catch (error) {
         if (!isSessionExpiredError(error) && !isBackendUnavailableError(error)) {
-          this.showErrorMessage("errorDeletePerson");
+          this.showActionError("errorDeletePerson", error);
         }
       } finally {
         ui.setProperty("/busy", false);
