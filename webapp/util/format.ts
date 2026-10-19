@@ -44,7 +44,7 @@ function toNumber(value: number | string): number {
     }
     const text = value.trim().replace(/\s/g, "");
     if (text.includes(",")) {
-        const normalized = text.replace(/\./g, "").replace(",", "");
+        const normalized = text.replace(",", "");
         return toFinite(normalized);
     }
     if (/^\d{1,3}(\.\d{3})+$/.test(text)) {
