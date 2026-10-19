@@ -338,7 +338,7 @@ export default class Home extends BaseController {
         } catch (error) {
             this.announcePersonSelected();
             if (!isSessionExpiredError(error) && !isBackendUnavailableError(error)) {
-                this.showErrorMessage("errorDiscardPersonDraft");
+                this.showActionError("errorDiscardPersonDraft", error);
             }
             return false;
         } finally {
@@ -467,7 +467,7 @@ export default class Home extends BaseController {
             this.reload();
         } catch (error) {
             if (!isSessionExpiredError(error) && !isBackendUnavailableError(error)) {
-                this.showErrorMessage("errorDeletePerson");
+                this.showActionError("errorDeletePerson", error);
             }
         } finally {
             ui.setProperty("/busy", false);

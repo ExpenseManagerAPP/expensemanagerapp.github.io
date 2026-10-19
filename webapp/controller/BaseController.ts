@@ -104,6 +104,20 @@ export abstract class BaseController extends Controller {
      * @param {string} messageKey the i18n key shown in the MessageBox
      * @param {string[]} [parameters] optional parameters for the i18n text
      */
+    /**
+     * Error of a user action: the text of the action plus, when the backend
+     * explained it (e.g. "you do not have permission"), the backend reason.
+     *
+     * @param {string} messageKey text of the action that failed
+     * @param {unknown} error the caught error
+     */
+    protected showActionError(messageKey: string, error: unknown): void {
+        const detail = getBackendErrorMessage(error);
+        MessageBox.error(detail ? `${this.getText(messageKey)}
+
+${detail}` : this.getText(messageKey));
+    }
+
     protected showErrorMessage(messageKey: string, parameters?: string[]): void {
         MessageBox.error(this.getText(messageKey, parameters));
     }
@@ -140,7 +154,7 @@ export abstract class BaseController extends Controller {
             this.showWarningMessage("personLockedByOther", [error.user]);
             return true;
         }
-        this.showErrorMessage(messageKey);
+        this.showActionError(messageKey, error);
         return true;
     }
 
