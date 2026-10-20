@@ -36,6 +36,14 @@
     --sapButton_Lite_Active_Background: #d9f2e8;
     --sapButton_Lite_Active_BorderColor: var(--teal-700);
     --sapList_Hover_Background: #f2faf7;
+    /* Semântica de "informação" na cor da marca: o Horizon usa azul nativo
+       no MessageBox/MessageStrip/ObjectStatus informativos. */
+    --sapInformationColor: var(--teal-800);
+    --sapInformativeColor: var(--teal-800);
+    --sapInformationBorderColor: var(--teal-700);
+    --sapInformativeBorderColor: var(--teal-700);
+    --sapInformationBackground: var(--teal-050);
+    --sapInformativeBackground: var(--teal-050);
     --sapBrandColor: var(--teal-700);
     --sapSelectedColor: var(--teal-700);
     --sapHighlightColor: var(--teal-700);
@@ -52,6 +60,19 @@
 
 .sapMMsgStrip.sapMMsgStripInformation .sapMMsgStripIcon,
 .sapMMsgStrip.sapMMsgStripInformation .sapUiIcon {
+    color: var(--teal-800);
+}
+
+/* O MessageBox.information (ex.: instruções de instalação no iPhone) usa as
+   cores nativas de informação (azul) no header e no ícone; alinha à marca. */
+.sapMMessageBox.sapMMessageBoxInformation .sapMDialogHeader,
+.sapMMessageBox.sapMMessageBoxInformation .sapMDialogTitle,
+.sapMMessageBox.sapMMessageBoxInformation .sapMDialogHeader .sapMTitle {
+    border-bottom-color: var(--teal-700);
+}
+
+.sapMMessageBox.sapMMessageBoxInformation .sapMDialogHeader .sapUiIcon,
+.sapMMessageBox.sapMMessageBoxInformation .sapMDialogIcon {
     color: var(--teal-800);
 }
 

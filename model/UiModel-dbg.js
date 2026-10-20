@@ -1,7 +1,8 @@
-sap.ui.define(["sap/ui/model/json/JSONModel", "../util/liabilityRules"], function (JSONModel, ___util_liabilityRules) {
+sap.ui.define(["sap/ui/model/json/JSONModel", "../util/liabilityRules", "../util/onboarding/OnboardingStorage"], function (JSONModel, ___util_liabilityRules, ___util_onboarding_OnboardingStorage) {
   "use strict";
 
   const TRANSACTION_TYPE_OPTIONS = ___util_liabilityRules["TRANSACTION_TYPE_OPTIONS"];
+  const OnboardingStorage = ___util_onboarding_OnboardingStorage["OnboardingStorage"];
   class UiModel extends JSONModel {
     constructor() {
       super(UiModel.initialState());
@@ -57,6 +58,7 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "../util/liabilityRules"], functio
         },
         monthLabel: "",
         personsEmpty: false,
+        tutorialSeen: OnboardingStorage.hasSeen(),
         selectedPerson: {
           ID: "",
           Name: ""

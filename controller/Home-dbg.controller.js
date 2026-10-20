@@ -1,4 +1,4 @@
-sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox", "./BaseController", "../auth/AuthenticationService", "../service/ODataService", "sap/ui/core/format/DateFormat", "sap/base/strings/formatMessage", "sap/m/library", "sap/ui/core/library", "../util/choiceDialog", "../service/PeriodService", "../service/MediaService", "../util/http", "../util/theme", "../util/feedback", "../util/personEvents", "../routing/routes"], function (MessageToast, Fragment, MessageBox, ___BaseController, ___auth_AuthenticationService, ___service_ODataService, DateFormat, formatMessage, sap_m_library, sap_ui_core_library, ___util_choiceDialog, ___service_PeriodService, ___service_MediaService, ___util_http, ___util_theme, ___util_feedback, ___util_personEvents, ___routing_routes) {
+sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox", "./BaseController", "../auth/AuthenticationService", "../service/ODataService", "sap/ui/core/format/DateFormat", "sap/base/strings/formatMessage", "sap/m/library", "sap/ui/core/library", "../util/choiceDialog", "../service/PeriodService", "../service/MediaService", "../util/http", "../util/theme", "../util/feedback", "../util/personEvents", "../routing/routes", "../util/onboarding/OnboardingStorage"], function (MessageToast, Fragment, MessageBox, ___BaseController, ___auth_AuthenticationService, ___service_ODataService, DateFormat, formatMessage, sap_m_library, sap_ui_core_library, ___util_choiceDialog, ___service_PeriodService, ___service_MediaService, ___util_http, ___util_theme, ___util_feedback, ___util_personEvents, ___routing_routes, ___util_onboarding_OnboardingStorage) {
   "use strict";
 
   const BaseController = ___BaseController["BaseController"];
@@ -23,6 +23,7 @@ sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox",
   const PERSON_DRAFT_CLOSING = ___util_personEvents["PERSON_DRAFT_CLOSING"];
   const PERSON_SELECTED = ___util_personEvents["PERSON_SELECTED"];
   const OUTSIDE_WORKSPACE_ROUTES = ___routing_routes["OUTSIDE_WORKSPACE_ROUTES"];
+  const OnboardingStorage = ___util_onboarding_OnboardingStorage["OnboardingStorage"];
   /**
    * Orchestrates the Home dashboard. Loading, selection and image/media state
    * is delegated to focused services (PeriodService, MediaService,
@@ -33,6 +34,7 @@ sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox",
     _persons = [];
     _currentPersonId = "";
     _draftsHandled = new Set();
+    _tutorialOpened = false;
     periodService = new PeriodService();
     onInit() {
       this.getOwnerComponent().setWorkspace(this);
@@ -552,6 +554,35 @@ sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox",
     onRestoreBackup() {
       void this.openPreparedDialog("Backup", dialog => dialog.open()).catch(error => this.handleError(error, "dialogOpenError"));
     }
+
+    /**
+     * Opens the guided tour. Called by the empty-state/header buttons, and
+     * automatically the first time the user has no person registered.
+     */
+    onOpenTutorial() {
+      void this.openPreparedDialog("Onboarding", dialog => dialog.open()).catch(error => this.handleError(error, "dialogOpenError"));
+    }
+
+    /**
+     * Navigates to a workspace tab and syncs the selected tab in the ui model.
+     *
+     * @param {string} route the route name (e.g. "Cards", "Liabilities")
+     */
+    navToWorkspace(route) {
+      this.navTo(route);
+    }
+
+    /**
+     * Opens the guided tour once per session, and only while the user has no
+     * person registered and has not concluded it before (localStorage flag).
+     */
+    maybeOpenTutorial() {
+      if (this._tutorialOpened || OnboardingStorage.hasSeen()) {
+        return;
+      }
+      this._tutorialOpened = true;
+      setTimeout(() => this.onOpenTutorial(), 0);
+    }
     onOpenSimulationDialog() {
       const ui = this.getUiModel();
       const period = this.periodService.currentOrDefault(ui.getProperty("/period"));
@@ -652,6 +683,7 @@ sap.ui.define(["sap/m/MessageToast", "sap/ui/core/Fragment", "sap/m/MessageBox",
         if (select) {
           select.setSelectedKey("");
         }
+        this.maybeOpenTutorial();
         return;
       }
       this.getUiModel().setProperty("/personsEmpty", false);

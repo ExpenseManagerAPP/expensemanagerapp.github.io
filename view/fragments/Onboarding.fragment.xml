@@ -1,0 +1,298 @@
+<core:FragmentDefinition
+    xmlns:core="sap.ui.core"
+    xmlns="sap.m"
+    id="Onboarding"
+>
+    <Dialog
+        id="onboardingDialog"
+        title="{i18n>onboardingTitle}"
+        class="financeDialog onboardingDialog"
+        contentWidth="34rem"
+        stretch="{device>/system/stretchDialogs}"
+        beforeOpen="handler.onDialogBeforeOpen"
+        core:require="{
+            handler: 'apps/dflc/expensemanager/controller/fragments/Onboarding'
+        }"
+    >
+        <content>
+            <Wizard
+                id="onboardingWizard"
+                class="onboardingWizard"
+                complete="handler.onFinishTutorial"
+            >
+                <WizardStep
+                    title="{i18n>onboardingStep1Title}"
+                    icon="sap-icon://welcome"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep1Text}"
+                            type="Information"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                    </VBox>
+                </WizardStep>
+
+                <WizardStep
+                    title="{i18n>onboardingStep2Title}"
+                    icon="sap-icon://person-placeholder"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep2Text}"
+                            type="Information"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                        <Button
+                            text="{i18n>onboardingStep2Action}"
+                            icon="sap-icon://add-employee"
+                            type="Emphasized"
+                            press="handler.onOpenPersonDialog"
+                            class="onboardingStepButton"
+                        />
+                    </VBox>
+                </WizardStep>
+
+                <WizardStep
+                    title="{i18n>onboardingStep3Title}"
+                    icon="sap-icon://credit-card"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep3Text}"
+                            type="Information"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                        <Button
+                            text="{i18n>onboardingGoToCards}"
+                            icon="sap-icon://credit-card"
+                            press="handler.onGoToCards"
+                            class="onboardingStepButton"
+                        />
+                    </VBox>
+                </WizardStep>
+
+                <WizardStep
+                    title="{i18n>onboardingStep4Title}"
+                    icon="sap-icon://tag"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep4Text}"
+                            type="Information"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                        <Button
+                            text="{i18n>onboardingGoToCategories}"
+                            icon="sap-icon://tag"
+                            press="handler.onGoToCategories"
+                            class="onboardingStepButton"
+                        />
+                    </VBox>
+                </WizardStep>
+
+                <WizardStep
+                    title="{i18n>onboardingStep5Title}"
+                    icon="sap-icon://add-document"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep5Text}"
+                            type="Information"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                        <Button
+                            text="{i18n>onboardingStep5Action}"
+                            icon="sap-icon://add-document"
+                            type="Emphasized"
+                            press="handler.onOpenExpenseDialog"
+                            class="onboardingStepButton"
+                        />
+                    </VBox>
+                </WizardStep>
+
+                <WizardStep
+                    title="{i18n>onboardingStep6Title}"
+                    icon="sap-icon://repeat"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep6Text}"
+                            type="Information"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                    </VBox>
+                </WizardStep>
+
+                <WizardStep
+                    title="{i18n>onboardingStep7Title}"
+                    icon="sap-icon://calendar"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep7Text}"
+                            type="Warning"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                    </VBox>
+                </WizardStep>
+
+                <WizardStep
+                    title="{i18n>onboardingStep8Title}"
+                    icon="sap-icon://receipt"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep8Text}"
+                            type="Information"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                        <Button
+                            text="{i18n>onboardingGoToInvoices}"
+                            icon="sap-icon://receipt"
+                            press="handler.onGoToInvoices"
+                            class="onboardingStepButton"
+                        />
+                    </VBox>
+                </WizardStep>
+
+                <WizardStep
+                    title="{i18n>onboardingStep9Title}"
+                    icon="sap-icon://email"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep9Text}"
+                            type="Information"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                        <Button
+                            text="{i18n>onboardingGoToOverview}"
+                            icon="sap-icon://home"
+                            press="handler.onGoToOverview"
+                            class="onboardingStepButton"
+                        />
+                    </VBox>
+                </WizardStep>
+
+                <WizardStep
+                    title="{i18n>onboardingStep10Title}"
+                    icon="sap-icon://notification"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep10Text}"
+                            type="Information"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                    </VBox>
+                </WizardStep>
+
+                <WizardStep
+                    title="{i18n>onboardingStep11Title}"
+                    icon="sap-icon://loan"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep11Text}"
+                            type="Information"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                        <Button
+                            text="{i18n>onboardingGoToDebts}"
+                            icon="sap-icon://loan"
+                            press="handler.onGoToDebts"
+                            class="onboardingStepButton"
+                        />
+                    </VBox>
+                </WizardStep>
+
+                <WizardStep
+                    title="{i18n>onboardingStep12Title}"
+                    icon="sap-icon://money-bills"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep12Text}"
+                            type="Information"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                    </VBox>
+                </WizardStep>
+
+                <WizardStep
+                    title="{i18n>onboardingStep13Title}"
+                    icon="sap-icon://database"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep13Text}"
+                            type="Information"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                        <Button
+                            text="{i18n>onboardingStep13Action}"
+                            icon="sap-icon://upload-to-cloud"
+                            press="handler.onOpenBackupDialog"
+                            class="onboardingStepButton"
+                        />
+                    </VBox>
+                </WizardStep>
+
+                <WizardStep
+                    title="{i18n>onboardingStep14Title}"
+                    icon="sap-icon://accept"
+                    validated="true"
+                >
+                    <VBox class="onboardingStep">
+                        <MessageStrip
+                            text="{i18n>onboardingStep14Text}"
+                            type="Success"
+                            showIcon="true"
+                            class="onboardingStepStrip"
+                        />
+                        <Button
+                            text="{i18n>onboardingFinishButton}"
+                            icon="sap-icon://accept"
+                            type="Emphasized"
+                            press="handler.onFinishTutorial"
+                            class="onboardingStepButton"
+                        />
+                    </VBox>
+                </WizardStep>
+            </Wizard>
+        </content>
+        <beginButton>
+            <Button
+                text="{i18n>onboardingCloseButton}"
+                press="handler.onCloseTutorial"
+            />
+        </beginButton>
+    </Dialog>
+</core:FragmentDefinition>

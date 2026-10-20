@@ -1,0 +1,2 @@
+sap.ui.define(["sap/ui/util/Storage"],function(e){"use strict";const t="tutorialSeen";const r=new e(e.Type.local,"expenseManager");class a{static hasSeen(){return r.get(t)===true}static markSeen(){r.put(t,true)}static reset(){r.remove(t)}}var n={__esModule:true};n.OnboardingStorage=a;return n});
+//# sourceMappingURL=OnboardingStorage.js.map

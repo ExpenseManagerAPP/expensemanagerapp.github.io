@@ -1,5 +1,6 @@
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { TRANSACTION_TYPE_OPTIONS } from "../util/liabilityRules";
+import { OnboardingStorage } from "../util/onboarding/OnboardingStorage";
 
 export interface UiPerson {
     ID: string;
@@ -127,6 +128,9 @@ export interface IUiState {
     monthLabel: string;
 
     personsEmpty: boolean;
+
+    /** The guided tour was already concluded on this device. */
+    tutorialSeen: boolean;
 
     selectedPerson: UiPerson;
 
@@ -290,6 +294,8 @@ export default class UiModel extends JSONModel {
             monthLabel: "",
 
             personsEmpty: false,
+
+            tutorialSeen: OnboardingStorage.hasSeen(),
 
             selectedPerson: {
                 ID: "",
