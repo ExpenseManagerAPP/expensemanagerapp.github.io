@@ -265,6 +265,16 @@
                     </items>
                 </IconTabBar>
                 <VBox id="tabContent" class="tabContent" visible="{= !${ui>/personsEmpty} }" />
+                <!-- Botão flutuante que reabre o tutorial quando ele está recolhido -->
+                <Button
+                    id="tutorialResumeButton"
+                    text="{i18n>tutorialResumeButton}"
+                    icon="sap-icon://learning-assistant"
+                    type="Emphasized"
+                    press=".onResumeTutorial"
+                    class="tutorialResumeButton"
+                    visible="{ui>/tutorialMinimized}"
+                />
             </VBox>
         </content>
         <footer>

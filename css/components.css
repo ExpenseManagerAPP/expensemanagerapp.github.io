@@ -51,3 +51,13 @@ html body .sapMSegB .sapMSegBBtn.sapMSegBBtnSel .sapMSegBBtnInner {
 .onboardingStepButton { border-radius: .8rem; }
 .onboardingStepButton .sapMBtnInner { border-radius: .8rem; }
 
+/* Botão flutuante que retoma o tutorial quando ele está minimizado */
+.tutorialResumeButton {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 20;
+    border-radius: .8rem;
+}
+.tutorialResumeButton .sapMBtnInner { border-radius: .8rem; box-shadow: 0 4px 16px rgba(19, 48, 48, .18); }
+

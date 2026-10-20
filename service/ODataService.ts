@@ -430,6 +430,19 @@ export class ODataService {
      * @returns {boolean} whether the active entity is missing
      */
     private isActiveEntityMissingError(error: unknown): boolean {
+        return this.isNotFoundError(error);
+    }
+
+    /**
+     * Tells whether the given error is an HTTP 404 (the entity no longer
+     * exists). After a successful delete, a late auto-flush or refresh of a
+     * binding that still pointed at the removed entity fails with 404; callers
+     * treat that as success, not as a failure to report.
+     *
+     * @param {unknown} error the error raised by the OData model
+     * @returns {boolean} whether the entity was not found (404)
+     */
+    public isNotFoundError(error: unknown): boolean {
         const cause = error as { status?: number; message?: string; cause?: { status?: number; message?: string } };
         const status = cause.status ?? cause.cause?.status;
 

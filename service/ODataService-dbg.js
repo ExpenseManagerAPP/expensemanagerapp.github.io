@@ -375,6 +375,19 @@ sap.ui.define(["../util/http"], function (___util_http) {
      * @returns {boolean} whether the active entity is missing
      */
     isActiveEntityMissingError(error) {
+      return this.isNotFoundError(error);
+    }
+
+    /**
+     * Tells whether the given error is an HTTP 404 (the entity no longer
+     * exists). After a successful delete, a late auto-flush or refresh of a
+     * binding that still pointed at the removed entity fails with 404; callers
+     * treat that as success, not as a failure to report.
+     *
+     * @param {unknown} error the error raised by the OData model
+     * @returns {boolean} whether the entity was not found (404)
+     */
+    isNotFoundError(error) {
       const cause = error;
       const status = cause.status ?? cause.cause?.status;
       return status === 404;

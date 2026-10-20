@@ -10,108 +10,174 @@ sap.ui.define(["sap/ui/core/Fragment", "../../util/onboarding/OnboardingStorage"
    * the closing-day rule, invoices, the e-mail notice, debts, liability
    * movements and the backup.
    *
+   * The step's action buttons minimize the dialog (instead of closing it), so the
+   * user can perform the action on the page and reopen the tour where it stopped
+   * from the floating button. The current step is persisted in localStorage.
+   *
    * The closing-day rule explained in step 7 mirrors the backend logic in
    * `srv/services/person/implementation.ts` (`calculateBillingCycle`); if that
    * rule changes, the step text must follow.
    *
-   * @param {Control} control any control inside the dialog
-   * @returns {Dialog} the owning dialog
+   * @returns {Dialog | undefined} the tour dialog, when the fragment is loaded
    */
-  function dialogOf(control) {
-    return control.getParent();
+  function dialogOf() {
+    return Fragment.byId("Onboarding", "onboardingDialog");
   }
 
   /**
-   * @param {Control} control any control inside the dialog
-   * @returns {XMLView} the view that owns the dialog
+   * @returns {XMLView | undefined} the view that owns the dialog
    */
-  function viewOf(control) {
-    return dialogOf(control).getParent();
+  function viewOf() {
+    return dialogOf()?.getParent();
   }
 
   /**
-   * @param {Control} control any control inside the dialog
-   * @returns {Home} the Home controller
+   * @returns {Home} the Home controller that owns the tour dialog
    */
-  function homeOf(control) {
-    return viewOf(control).getController();
+  function homeOf() {
+    return viewOf()?.getController();
   }
 
   /**
-   * @param {Control} control any control inside the dialog
+   * @returns {Wizard | undefined} the tour wizard
    */
-  function closeDialog(control) {
-    dialogOf(control).close();
+  function wizardOf() {
+    return Fragment.byId("Onboarding", "onboardingWizard");
+  }
+
+  /** Minimizes the tour: closes the dialog but keeps it resumable. */
+  function minimizeDialog() {
+    homeOf().minimizeTutorial();
   }
   const Onboarding = {
-    /** Restarts the tour from the first step every time it is opened. */
+    /**
+     * Keeps `beforeOpen` free of DOM-dependent work; the actual step restore
+     * happens in `onDialogAfterOpen`, once the wizard is rendered and visible.
+     */
     onDialogBeforeOpen: function () {
-      const wizard = Fragment.byId("Onboarding", "onboardingWizard");
+      // intentionally empty: restoring the step needs the rendered wizard
+    },
+    /**
+     * Restores the saved step once the dialog is open. The saved step must be
+     * read *before* discarding progress: discarding fires `stepActivate` for
+     * the first step, which would otherwise overwrite the saved position.
+     *
+     * The Wizard only allows moving to steps already reached, so progress is
+     * discarded to the first step and then advanced step by step up to the
+     * saved index.
+     */
+    onDialogAfterOpen: function () {
+      const wizard = wizardOf();
       const steps = wizard?.getSteps();
-      if (wizard && steps && steps.length > 0) {
-        wizard.discardProgress(steps[0], false);
+      if (!wizard || !steps || steps.length === 0) {
+        return;
+      }
+      const target = Math.min(OnboardingStorage.loadStep(), steps.length - 1);
+      wizard.discardProgress(steps[0], true);
+      if (target <= 0) {
+        OnboardingStorage.saveStep(0);
+        return;
+      }
+      OnboardingStorage.saveStep(target);
+      const advance = remaining => {
+        if (remaining <= 0) {
+          return;
+        }
+        setTimeout(() => {
+          wizard.nextStep();
+          advance(remaining - 1);
+        }, 0);
+      };
+      advance(target);
+    },
+    /**
+     * Persists the current step whenever the wizard activates a new one.
+     *
+     * @param {object} event the wizard's stepActivate event
+     */
+    onStepActivate: function (event) {
+      const wizard = wizardOf();
+      if (!wizard) {
+        return;
+      }
+
+      // The event carries the activated step; fall back to the wizard's own
+      // progress index when it is missing, so a step change is never lost.
+      const step = event.getParameter?.("step");
+      const steps = wizard.getSteps() ?? [];
+      const index = step ? steps.indexOf(step) : wizard.getProgress();
+      if (index >= 0) {
+        OnboardingStorage.saveStep(index);
       }
     },
     /**
-     * Closes the tour without marking it as seen.
-     *
-     * @param {Control} this the pressed button
+     * Minimizes the tour without marking it as seen, so the user can act on the
+     * page and resume it later from the floating button.
      */
     onCloseTutorial: function () {
-      closeDialog(this);
+      minimizeDialog();
+    },
+    /** Marks the tour as seen, closes it and confirms to the user. */
+    onFinishTutorial: function () {
+      const view = viewOf();
+      dialogOf()?.close();
+      homeOf().endTutorial();
+      OnboardingStorage.markSeen();
+      const ui = view?.getModel("ui");
+      ui?.setProperty("/tutorialSeen", true);
+      if (view) {
+        showToast(view, "tutorialFinishedToast");
+      }
     },
     /**
-     * Marks the tour as seen, closes it and confirms to the user.
-     *
-     * @param {Control} this the pressed button
+     * Minimizes the tour and opens the existing "create person" dialog.
      */
-    onFinishTutorial: function () {
-      const view = viewOf(this);
-      closeDialog(this);
-      OnboardingStorage.markSeen();
-      const ui = view.getModel("ui");
-      ui?.setProperty("/tutorialSeen", true);
-      showToast(view, "tutorialFinishedToast");
-    },
-    /** Closes the tour and opens the existing "create person" dialog. */
     onOpenPersonDialog: function () {
-      closeDialog(this);
-      homeOf(this).onOpenPersonDialog();
+      const home = homeOf();
+      minimizeDialog();
+      home.onOpenPersonDialog();
     },
-    /** Closes the tour and opens the existing "add expense" dialog. */
+    /** Minimizes the tour and opens the existing "add expense" dialog. */
     onOpenExpenseDialog: function () {
-      closeDialog(this);
-      homeOf(this).onOpenExpenseDialog();
+      const home = homeOf();
+      minimizeDialog();
+      home.onOpenExpenseDialog();
     },
-    /** Closes the tour and opens the existing backup dialog. */
+    /** Minimizes the tour and opens the existing backup dialog. */
     onOpenBackupDialog: function () {
-      closeDialog(this);
-      homeOf(this).onRestoreBackup();
+      const home = homeOf();
+      minimizeDialog();
+      home.onRestoreBackup();
     },
-    /** Closes the tour and navigates to the Cards tab. */
+    /** Minimizes the tour and navigates to the Cards tab. */
     onGoToCards: function () {
-      closeDialog(this);
-      homeOf(this).navToWorkspace("Cards");
+      const home = homeOf();
+      minimizeDialog();
+      home.navToWorkspace("Cards");
     },
-    /** Closes the tour and navigates to the Categories tab. */
+    /** Minimizes the tour and navigates to the Categories tab. */
     onGoToCategories: function () {
-      closeDialog(this);
-      homeOf(this).navToWorkspace("Categories");
+      const home = homeOf();
+      minimizeDialog();
+      home.navToWorkspace("Categories");
     },
-    /** Closes the tour and navigates to the Invoices tab. */
+    /** Minimizes the tour and navigates to the Invoices tab. */
     onGoToInvoices: function () {
-      closeDialog(this);
-      homeOf(this).navToWorkspace("Invoices");
+      const home = homeOf();
+      minimizeDialog();
+      home.navToWorkspace("Invoices");
     },
-    /** Closes the tour and navigates to the Liabilities (debts) tab. */
+    /** Minimizes the tour and navigates to the Liabilities (debts) tab. */
     onGoToDebts: function () {
-      closeDialog(this);
-      homeOf(this).navToWorkspace("Liabilities");
+      const home = homeOf();
+      minimizeDialog();
+      home.navToWorkspace("Liabilities");
     },
-    /** Closes the tour and navigates to the Overview tab. */
+    /** Minimizes the tour and navigates to the Overview tab. */
     onGoToOverview: function () {
-      closeDialog(this);
-      homeOf(this).navToWorkspace("Home");
+      const home = homeOf();
+      minimizeDialog();
+      home.navToWorkspace("Home");
     }
   };
   return Onboarding;

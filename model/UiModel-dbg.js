@@ -59,6 +59,7 @@ sap.ui.define(["sap/ui/model/json/JSONModel", "../util/liabilityRules", "../util
         monthLabel: "",
         personsEmpty: false,
         tutorialSeen: OnboardingStorage.hasSeen(),
+        tutorialMinimized: false,
         selectedPerson: {
           ID: "",
           Name: ""

@@ -1,0 +1,2 @@
+sap.ui.define(["sap/m/Wizard","sap/m/WizardRenderer"],function(t,e){"use strict";const n=t.extend("apps.dflc.expensemanager.control.TutorialWizard",{metadata:{library:"sap.m",defaultAggregation:"steps"},renderer:e,addStep:function(t){t.setWizardContext({bParentAllowsButtonShow:this.getShowNextButton()});this._incrementStepCount();this.addAggregation("steps",t);return this},_isMaxStepCountReached:function(){return false},_isStepCountInRange:function(){return this._getStepCount()>=3}});return n});
+//# sourceMappingURL=TutorialWizard.js.map
