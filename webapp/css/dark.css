@@ -34,6 +34,12 @@
     /* Interação dos controles padrão (tema SAP) para fechar com o dark */
     --sapContent_FocusColor: var(--teal-600);
     --sapContent_BusyColor: var(--teal-600);
+    --sapInformationColor: var(--teal-600);
+    --sapInformativeColor: var(--teal-600);
+    --sapInformationBorderColor: var(--teal-700);
+    --sapInformativeBorderColor: var(--teal-700);
+    --sapInformationBackground: var(--teal-100);
+    --sapInformativeBackground: var(--teal-100);
     --sapButton_Hover_Background: #18312c;
     --sapButton_Hover_BorderColor: #2d4f49;
     --sapButton_Hover_TextColor: var(--teal-600);
@@ -79,6 +85,17 @@ html[data-theme="dark"] body .sectionTabs.sapMITB .sapMITBHead .sapMITBFilter:ac
 
 [data-theme="dark"] .sapMMsgStrip.sapMMsgStripInformation .sapMMsgStripIcon,
 [data-theme="dark"] .sapMMsgStrip.sapMMsgStripInformation .sapUiIcon {
+    color: var(--teal-600);
+}
+
+[data-theme="dark"] .sapMMessageBox.sapMMessageBoxInformation .sapMDialogHeader,
+[data-theme="dark"] .sapMMessageBox.sapMMessageBoxInformation .sapMDialogTitle,
+[data-theme="dark"] .sapMMessageBox.sapMMessageBoxInformation .sapMDialogHeader .sapMTitle {
+    border-bottom-color: var(--teal-700);
+}
+
+[data-theme="dark"] .sapMMessageBox.sapMMessageBoxInformation .sapMDialogHeader .sapUiIcon,
+[data-theme="dark"] .sapMMessageBox.sapMMessageBoxInformation .sapMDialogIcon {
     color: var(--teal-600);
 }
 

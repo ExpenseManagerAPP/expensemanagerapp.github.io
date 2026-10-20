@@ -39,6 +39,7 @@ import type { UiPerson } from "../model/UiModel";
 import type Component from "../Component";
 import { PERSON_CHANNEL, PERSON_DRAFT_CLOSING, PERSON_SELECTED } from "../util/personEvents";
 import { OUTSIDE_WORKSPACE_ROUTES } from "../routing/routes";
+import { OnboardingStorage } from "../util/onboarding/OnboardingStorage";
 
 interface CardRow {
     ID: string;
@@ -60,6 +61,7 @@ export default class Home extends BaseController {
     private _currentPersonId = "";
     private _initializing?: Promise<void>;
     private readonly _draftsHandled = new Set<string>();
+    private _tutorialOpened = false;
 
     private readonly periodService = new PeriodService();
 
@@ -598,6 +600,36 @@ export default class Home extends BaseController {
             .catch((error) => this.handleError(error, "dialogOpenError"));
     }
 
+    /**
+     * Opens the guided tour. Called by the empty-state/header buttons, and
+     * automatically the first time the user has no person registered.
+     */
+    public onOpenTutorial(): void {
+        void this.openPreparedDialog("Onboarding", (dialog) => dialog.open())
+            .catch((error) => this.handleError(error, "dialogOpenError"));
+    }
+
+    /**
+     * Navigates to a workspace tab and syncs the selected tab in the ui model.
+     *
+     * @param {string} route the route name (e.g. "Cards", "Liabilities")
+     */
+    public navToWorkspace(route: string): void {
+        this.navTo(route);
+    }
+
+    /**
+     * Opens the guided tour once per session, and only while the user has no
+     * person registered and has not concluded it before (localStorage flag).
+     */
+    private maybeOpenTutorial(): void {
+        if (this._tutorialOpened || OnboardingStorage.hasSeen()) {
+            return;
+        }
+        this._tutorialOpened = true;
+        setTimeout(() => this.onOpenTutorial(), 0);
+    }
+
     public onOpenSimulationDialog(): void {
         const ui = this.getUiModel();
         const period = this.periodService.currentOrDefault(ui.getProperty("/period") as Period | undefined);
@@ -708,6 +740,7 @@ export default class Home extends BaseController {
             if (select) {
                 select.setSelectedKey("");
             }
+            this.maybeOpenTutorial();
             return;
         }
 

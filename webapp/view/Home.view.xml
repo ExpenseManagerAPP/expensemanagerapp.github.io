@@ -159,6 +159,14 @@
                                 visible="{ui>/isAdmin}"
                             />
                             <Button
+                                icon="sap-icon://sys-help"
+                                type="Transparent"
+                                tooltip="{i18n>tutorialHeaderButton}"
+                                press=".onOpenTutorial"
+                                class="iconAction"
+                                visible="{= !${ui>/personsEmpty} }"
+                            />
+                            <Button
                                 icon="sap-icon://log"
                                 type="Transparent"
                                 tooltip="{i18n>logoutTooltip}"
@@ -225,6 +233,13 @@
                             icon="sap-icon://upload-to-cloud"
                             type="Transparent"
                             press=".onRestoreBackup"
+                            class="emptyStateButton"
+                        />
+                        <Button
+                            text="{= ${ui>/tutorialSeen} ? ${i18n>tutorialRerunButton} : ${i18n>tutorialOpenButton} }"
+                            icon="sap-icon://learning-assistant"
+                            type="Transparent"
+                            press=".onOpenTutorial"
                             class="emptyStateButton"
                         />
                     </HBox>
