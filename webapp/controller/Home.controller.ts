@@ -460,15 +460,30 @@ export default class Home extends BaseController {
         ui.setProperty("/busy", true);
 
         try {
+            // Tell the tab views to release their person-scoped bindings before
+            // the entity is removed, otherwise a late refresh/auto-flush would
+            // hit the deleted path and fail with 404 ("Could not save the change").
+            this.announceDraftClosing();
             this.releasePersonDetailDraftBinding();
             await this._odata.submitPending();
             await this._odata.deleteEntity("Persons", personId);
             ui.setProperty("/selectedPersonId", "");
+            ui.setProperty("/selectedPerson", {});
             ui.setProperty("/selectedPersonDraft", false);
+            this._currentPersonId = "";
             MessageToast.show(this.getText("personDeleted"));
             this.reload();
         } catch (error) {
-            if (!isSessionExpiredError(error) && !isBackendUnavailableError(error)) {
+            if (this._odata.isNotFoundError(error)) {
+                // The entity was already removed; a late 404 from a pending
+                // request is a success, not a failure to report.
+                ui.setProperty("/selectedPersonId", "");
+                ui.setProperty("/selectedPerson", {});
+                ui.setProperty("/selectedPersonDraft", false);
+                this._currentPersonId = "";
+                MessageToast.show(this.getText("personDeleted"));
+                this.reload();
+            } else if (!isSessionExpiredError(error) && !isBackendUnavailableError(error)) {
                 this.showActionError("errorDeletePerson", error);
             }
         } finally {
@@ -603,10 +618,50 @@ export default class Home extends BaseController {
     /**
      * Opens the guided tour. Called by the empty-state/header buttons, and
      * automatically the first time the user has no person registered.
+     *
+     * It resumes where the user stopped (the wizard restores the saved step),
+     * except on an explicit rerun: when the tour was already concluded, opening
+     * it again restarts from the first step.
      */
     public onOpenTutorial(): void {
+        if (OnboardingStorage.hasSeen()) {
+            OnboardingStorage.saveStep(0);
+        }
+        OnboardingStorage.markActive();
+        this.getUiModel().setProperty("/tutorialMinimized", false);
         void this.openPreparedDialog("Onboarding", (dialog) => dialog.open())
             .catch((error) => this.handleError(error, "dialogOpenError"));
+    }
+
+    /**
+     * Reopens the tour from the floating button after it was minimized, keeping
+     * the current step (unlike an explicit rerun, it never restarts).
+     */
+    public onResumeTutorial(): void {
+        OnboardingStorage.markActive();
+        this.getUiModel().setProperty("/tutorialMinimized", false);
+        void this.openPreparedDialog("Onboarding", (dialog) => dialog.open())
+            .catch((error) => this.handleError(error, "dialogOpenError"));
+    }
+
+    /**
+     * Minimizes the tour: the dialog is closed (its instance stays cached, so
+     * the current step is preserved) and the floating button is shown, letting
+     * the user perform the step's action on the page.
+     */
+    public minimizeTutorial(): void {
+        this.getUiModel().setProperty("/tutorialMinimized", true);
+        const cached = this._dialogs.get("Onboarding");
+        void cached?.then((dialog) => dialog.close()).catch(() => undefined);
+    }
+
+    /**
+     * Ends the tour for good: the in-progress flag is cleared so the floating
+     * button disappears.
+     */
+    public endTutorial(): void {
+        OnboardingStorage.markInactive();
+        this.getUiModel().setProperty("/tutorialMinimized", false);
     }
 
     /**

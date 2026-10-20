@@ -132,6 +132,9 @@ export interface IUiState {
     /** The guided tour was already concluded on this device. */
     tutorialSeen: boolean;
 
+    /** The guided tour is in progress but minimized to the floating button. */
+    tutorialMinimized: boolean;
+
     selectedPerson: UiPerson;
 
     selectedPersonId: string;
@@ -296,6 +299,8 @@ export default class UiModel extends JSONModel {
             personsEmpty: false,
 
             tutorialSeen: OnboardingStorage.hasSeen(),
+
+            tutorialMinimized: false,
 
             selectedPerson: {
                 ID: "",

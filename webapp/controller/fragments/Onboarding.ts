@@ -1,6 +1,6 @@
-import Control from "sap/ui/core/Control";
 import Dialog from "sap/m/Dialog";
 import Wizard from "sap/m/Wizard";
+import WizardStep from "sap/m/WizardStep";
 import Fragment from "sap/ui/core/Fragment";
 import XMLView from "sap/ui/core/mvc/XMLView";
 import JSONModel from "sap/ui/model/json/JSONModel";
@@ -15,120 +15,195 @@ import type Home from "../../controller/Home.controller";
  * the closing-day rule, invoices, the e-mail notice, debts, liability
  * movements and the backup.
  *
+ * The step's action buttons minimize the dialog (instead of closing it), so the
+ * user can perform the action on the page and reopen the tour where it stopped
+ * from the floating button. The current step is persisted in localStorage.
+ *
  * The closing-day rule explained in step 7 mirrors the backend logic in
  * `srv/services/person/implementation.ts` (`calculateBillingCycle`); if that
  * rule changes, the step text must follow.
  *
- * @param {Control} control any control inside the dialog
- * @returns {Dialog} the owning dialog
+ * @returns {Dialog | undefined} the tour dialog, when the fragment is loaded
  */
-function dialogOf(control: Control): Dialog {
-    return control.getParent() as Dialog;
+function dialogOf(): Dialog | undefined {
+    return Fragment.byId("Onboarding", "onboardingDialog") as Dialog | undefined;
 }
 
 /**
- * @param {Control} control any control inside the dialog
- * @returns {XMLView} the view that owns the dialog
+ * @returns {XMLView | undefined} the view that owns the dialog
  */
-function viewOf(control: Control): XMLView {
-    return dialogOf(control).getParent() as XMLView;
+function viewOf(): XMLView | undefined {
+    return dialogOf()?.getParent() as XMLView | undefined;
 }
 
 /**
- * @param {Control} control any control inside the dialog
- * @returns {Home} the Home controller
+ * @returns {Home} the Home controller that owns the tour dialog
  */
-function homeOf(control: Control): Home {
-    return viewOf(control).getController() as Home;
+function homeOf(): Home {
+    return viewOf()?.getController() as Home;
 }
 
 /**
- * @param {Control} control any control inside the dialog
+ * @returns {Wizard | undefined} the tour wizard
  */
-function closeDialog(control: Control): void {
-    dialogOf(control).close();
+function wizardOf(): Wizard | undefined {
+    return Fragment.byId("Onboarding", "onboardingWizard") as Wizard | undefined;
+}
+
+/** Minimizes the tour: closes the dialog but keeps it resumable. */
+function minimizeDialog(): void {
+    homeOf().minimizeTutorial();
 }
 
 const Onboarding = {
 
-    /** Restarts the tour from the first step every time it is opened. */
+    /**
+     * Keeps `beforeOpen` free of DOM-dependent work; the actual step restore
+     * happens in `onDialogAfterOpen`, once the wizard is rendered and visible.
+     */
     onDialogBeforeOpen: function (): void {
-        const wizard = Fragment.byId("Onboarding", "onboardingWizard") as Wizard | undefined;
+        // intentionally empty: restoring the step needs the rendered wizard
+    },
+
+    /**
+     * Restores the saved step once the dialog is open. The saved step must be
+     * read *before* discarding progress: discarding fires `stepActivate` for
+     * the first step, which would otherwise overwrite the saved position.
+     *
+     * The Wizard only allows moving to steps already reached, so progress is
+     * discarded to the first step and then advanced step by step up to the
+     * saved index.
+     */
+    onDialogAfterOpen: function (): void {
+        const wizard = wizardOf();
         const steps = wizard?.getSteps();
-        if (wizard && steps && steps.length > 0) {
-            wizard.discardProgress(steps[0], false);
+        if (!wizard || !steps || steps.length === 0) {
+            return;
+        }
+
+        const target = Math.min(OnboardingStorage.loadStep(), steps.length - 1);
+
+        wizard.discardProgress(steps[0], true);
+
+        if (target <= 0) {
+            OnboardingStorage.saveStep(0);
+            return;
+        }
+
+        OnboardingStorage.saveStep(target);
+
+        const advance = (remaining: number): void => {
+            if (remaining <= 0) {
+                return;
+            }
+            setTimeout(() => {
+                wizard.nextStep();
+                advance(remaining - 1);
+            }, 0);
+        };
+
+        advance(target);
+    },
+
+    /**
+     * Persists the current step whenever the wizard activates a new one.
+     *
+     * @param {object} event the wizard's stepActivate event
+     */
+    onStepActivate: function (event: { getParameter?: (name: string) => unknown }): void {
+        const wizard = wizardOf();
+        if (!wizard) {
+            return;
+        }
+
+        // The event carries the activated step; fall back to the wizard's own
+        // progress index when it is missing, so a step change is never lost.
+        const step = event.getParameter?.("step") as WizardStep | undefined;
+        const steps = wizard.getSteps() ?? [];
+        const index = step ? steps.indexOf(step) : wizard.getProgress();
+
+        if (index >= 0) {
+            OnboardingStorage.saveStep(index);
         }
     },
 
     /**
-     * Closes the tour without marking it as seen.
-     *
-     * @param {Control} this the pressed button
+     * Minimizes the tour without marking it as seen, so the user can act on the
+     * page and resume it later from the floating button.
      */
-    onCloseTutorial: function (this: Control): void {
-        closeDialog(this);
+    onCloseTutorial: function (): void {
+        minimizeDialog();
+    },
+
+    /** Marks the tour as seen, closes it and confirms to the user. */
+    onFinishTutorial: function (): void {
+        const view = viewOf();
+        dialogOf()?.close();
+        homeOf().endTutorial();
+        OnboardingStorage.markSeen();
+        const ui = view?.getModel("ui") as JSONModel | undefined;
+        ui?.setProperty("/tutorialSeen", true);
+        if (view) {
+            showToast(view, "tutorialFinishedToast");
+        }
     },
 
     /**
-     * Marks the tour as seen, closes it and confirms to the user.
-     *
-     * @param {Control} this the pressed button
+     * Minimizes the tour and opens the existing "create person" dialog.
      */
-    onFinishTutorial: function (this: Control): void {
-        const view = viewOf(this);
-        closeDialog(this);
-        OnboardingStorage.markSeen();
-        const ui = view.getModel("ui") as JSONModel | undefined;
-        ui?.setProperty("/tutorialSeen", true);
-        showToast(view, "tutorialFinishedToast");
+    onOpenPersonDialog: function (): void {
+        const home = homeOf();
+        minimizeDialog();
+        home.onOpenPersonDialog();
     },
 
-    /** Closes the tour and opens the existing "create person" dialog. */
-    onOpenPersonDialog: function (this: Control): void {
-        closeDialog(this);
-        homeOf(this).onOpenPersonDialog();
+    /** Minimizes the tour and opens the existing "add expense" dialog. */
+    onOpenExpenseDialog: function (): void {
+        const home = homeOf();
+        minimizeDialog();
+        home.onOpenExpenseDialog();
     },
 
-    /** Closes the tour and opens the existing "add expense" dialog. */
-    onOpenExpenseDialog: function (this: Control): void {
-        closeDialog(this);
-        homeOf(this).onOpenExpenseDialog();
+    /** Minimizes the tour and opens the existing backup dialog. */
+    onOpenBackupDialog: function (): void {
+        const home = homeOf();
+        minimizeDialog();
+        home.onRestoreBackup();
     },
 
-    /** Closes the tour and opens the existing backup dialog. */
-    onOpenBackupDialog: function (this: Control): void {
-        closeDialog(this);
-        homeOf(this).onRestoreBackup();
+    /** Minimizes the tour and navigates to the Cards tab. */
+    onGoToCards: function (): void {
+        const home = homeOf();
+        minimizeDialog();
+        home.navToWorkspace("Cards");
     },
 
-    /** Closes the tour and navigates to the Cards tab. */
-    onGoToCards: function (this: Control): void {
-        closeDialog(this);
-        homeOf(this).navToWorkspace("Cards");
+    /** Minimizes the tour and navigates to the Categories tab. */
+    onGoToCategories: function (): void {
+        const home = homeOf();
+        minimizeDialog();
+        home.navToWorkspace("Categories");
     },
 
-    /** Closes the tour and navigates to the Categories tab. */
-    onGoToCategories: function (this: Control): void {
-        closeDialog(this);
-        homeOf(this).navToWorkspace("Categories");
+    /** Minimizes the tour and navigates to the Invoices tab. */
+    onGoToInvoices: function (): void {
+        const home = homeOf();
+        minimizeDialog();
+        home.navToWorkspace("Invoices");
     },
 
-    /** Closes the tour and navigates to the Invoices tab. */
-    onGoToInvoices: function (this: Control): void {
-        closeDialog(this);
-        homeOf(this).navToWorkspace("Invoices");
+    /** Minimizes the tour and navigates to the Liabilities (debts) tab. */
+    onGoToDebts: function (): void {
+        const home = homeOf();
+        minimizeDialog();
+        home.navToWorkspace("Liabilities");
     },
 
-    /** Closes the tour and navigates to the Liabilities (debts) tab. */
-    onGoToDebts: function (this: Control): void {
-        closeDialog(this);
-        homeOf(this).navToWorkspace("Liabilities");
-    },
-
-    /** Closes the tour and navigates to the Overview tab. */
-    onGoToOverview: function (this: Control): void {
-        closeDialog(this);
-        homeOf(this).navToWorkspace("Home");
+    /** Minimizes the tour and navigates to the Overview tab. */
+    onGoToOverview: function (): void {
+        const home = homeOf();
+        minimizeDialog();
+        home.navToWorkspace("Home");
     }
 
 };

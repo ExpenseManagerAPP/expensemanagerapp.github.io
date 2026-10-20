@@ -1,5 +1,6 @@
 <core:FragmentDefinition
     xmlns:core="sap.ui.core"
+    xmlns:ctrl="apps.dflc.expensemanager.control"
     xmlns="sap.m"
     id="Onboarding"
 >
@@ -10,19 +11,21 @@
         contentWidth="34rem"
         stretch="{device>/system/stretchDialogs}"
         beforeOpen="handler.onDialogBeforeOpen"
+        afterOpen="handler.onDialogAfterOpen"
         core:require="{
             handler: 'apps/dflc/expensemanager/controller/fragments/Onboarding'
         }"
     >
         <content>
-            <Wizard
+            <ctrl:TutorialWizard
                 id="onboardingWizard"
                 class="onboardingWizard"
                 complete="handler.onFinishTutorial"
+                stepActivate="handler.onStepActivate"
             >
                 <WizardStep
                     title="{i18n>onboardingStep1Title}"
-                    icon="sap-icon://welcome"
+                    icon="sap-icon://begin"
                     validated="true"
                 >
                     <VBox class="onboardingStep">
@@ -42,9 +45,17 @@
                 >
                     <VBox class="onboardingStep">
                         <MessageStrip
-                            text="{i18n>onboardingStep2Text}"
+                            text="{i18n>onboardingStep2TextCreate}"
                             type="Information"
                             showIcon="true"
+                            visible="{ui>/personsEmpty}"
+                            class="onboardingStepStrip"
+                        />
+                        <MessageStrip
+                            text="{i18n>onboardingStep2TextSelect}"
+                            type="Information"
+                            showIcon="true"
+                            visible="{= !${ui>/personsEmpty} }"
                             class="onboardingStepStrip"
                         />
                         <Button
@@ -52,6 +63,7 @@
                             icon="sap-icon://add-employee"
                             type="Emphasized"
                             press="handler.onOpenPersonDialog"
+                            visible="{ui>/personsEmpty}"
                             class="onboardingStepButton"
                         />
                     </VBox>
@@ -123,7 +135,7 @@
 
                 <WizardStep
                     title="{i18n>onboardingStep6Title}"
-                    icon="sap-icon://repeat"
+                    icon="sap-icon://refresh"
                     validated="true"
                 >
                     <VBox class="onboardingStep">
@@ -286,7 +298,7 @@
                         />
                     </VBox>
                 </WizardStep>
-            </Wizard>
+            </ctrl:TutorialWizard>
         </content>
         <beginButton>
             <Button
