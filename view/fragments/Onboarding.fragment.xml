@@ -7,7 +7,7 @@
     <Dialog
         id="onboardingDialog"
         title="{i18n>onboardingTitle}"
-        class="financeDialog onboardingDialog"
+        class="{= ${ui>/selectedPersonDraft} ? 'financeDialog onboardingDialog onboardingDialogWithDraft' : 'financeDialog onboardingDialog' }"
         contentWidth="34rem"
         stretch="{device>/system/stretchDialogs}"
         beforeOpen="handler.onDialogBeforeOpen"
@@ -306,5 +306,13 @@
                 press="handler.onCloseTutorial"
             />
         </beginButton>
+        <endButton>
+            <Button
+                text="{i18n>onboardingFinishButton}"
+                type="Emphasized"
+                icon="sap-icon://accept"
+                press="handler.onFinishTutorial"
+            />
+        </endButton>
     </Dialog>
 </core:FragmentDefinition>
