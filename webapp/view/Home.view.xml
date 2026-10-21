@@ -265,7 +265,8 @@
                     </items>
                 </IconTabBar>
                 <VBox id="tabContent" class="tabContent" visible="{= !${ui>/personsEmpty} }" />
-                <!-- Botão flutuante que reabre o tutorial quando ele está recolhido -->
+                <!-- Botão flutuante que reabre o tutorial quando ele está recolhido.
+                     Sobe quando o footer de rascunho está visível, para não cobrir o "Save changes". -->
                 <Button
                     id="tutorialResumeButton"
                     text="{i18n>tutorialResumeButton}"
@@ -273,13 +274,21 @@
                     type="Emphasized"
                     press=".onResumeTutorial"
                     class="tutorialResumeButton"
-                    visible="{ui>/tutorialMinimized}"
+                    visible="{= ${ui>/tutorialMinimized} &amp;&amp; !${ui>/selectedPersonDraft} }"
                 />
             </VBox>
         </content>
         <footer>
             <OverflowToolbar class="personDraftFooter">
                 <ToolbarSpacer />
+                <Button
+                    id="tutorialResumeButtonInFooter"
+                    text="{i18n>tutorialResumeButton}"
+                    icon="sap-icon://learning-assistant"
+                    type="Transparent"
+                    press=".onResumeTutorial"
+                    visible="{= ${ui>/tutorialMinimized} &amp;&amp; ${ui>/selectedPersonDraft} }"
+                />
                 <Button text="{i18n>personDiscardButton}" type="Reject" press=".onDiscardPersonDraft" />
                 <Button text="{i18n>personSaveDraftButton}" type="Emphasized" icon="sap-icon://save" press=".onSavePersonDraft" />
             </OverflowToolbar>

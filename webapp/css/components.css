@@ -51,13 +51,29 @@ html body .sapMSegB .sapMSegBBtn.sapMSegBBtnSel .sapMSegBBtnInner {
 .onboardingStepButton { border-radius: .8rem; }
 .onboardingStepButton .sapMBtnInner { border-radius: .8rem; }
 
+/* Sobe o diálogo do tutorial quando houver rascunho ativo para não sobrepor o footer "Save changes" */
+.onboardingDialogWithDraft .sapMDialog {
+    top: 50% !important;
+    transform: translateY(calc(-50% - 6rem)) !important;
+}
+
+@media (max-width: 600px) {
+    .onboardingDialogWithDraft .sapMDialog {
+        transform: translateY(calc(-50% - 5rem)) !important;
+    }
+}
+
 /* Botão flutuante que retoma o tutorial quando ele está minimizado */
 .tutorialResumeButton {
-    position: fixed;
+    position: fixed !important;
     right: 1rem;
     bottom: 1rem;
     z-index: 20;
     border-radius: .8rem;
 }
 .tutorialResumeButton .sapMBtnInner { border-radius: .8rem; box-shadow: 0 4px 16px rgba(19, 48, 48, .18); }
+
+/* Sobe o botão flutuante quando o footer de rascunho (Salvar/Descartar) está visível */
+/* Quando há footer com draft, subir o botão flutuante para não sobrepor o "Save changes" */
+/* Não precisa quando o botão está no footer */
 
